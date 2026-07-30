@@ -1,0 +1,5 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl motor
+map_Kd libvulpes:blocks/motor

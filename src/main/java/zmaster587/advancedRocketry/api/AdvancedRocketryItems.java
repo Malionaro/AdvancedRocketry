@@ -15,12 +15,17 @@ import zmaster587.advancedRocketry.armor.ItemSpaceArmor;
 import zmaster587.advancedRocketry.armor.ItemSpaceChest;
 import zmaster587.advancedRocketry.item.ItemAsteroidChip;
 import zmaster587.advancedRocketry.item.tools.ItemAtmosphereAnalyzer;
+import zmaster587.advancedRocketry.item.tools.ItemBasicLaserGun;
 import zmaster587.advancedRocketry.item.components.ItemBeaconFinder;
 import zmaster587.advancedRocketry.item.ItemDataChip;
+import zmaster587.advancedRocketry.item.ItemBiomeChanger;
 import zmaster587.advancedRocketry.item.ItemHovercraft;
 import zmaster587.advancedRocketry.item.tools.ItemJackhammer;
 import zmaster587.advancedRocketry.item.tools.ItemOreScanner;
+import zmaster587.advancedRocketry.item.ItemSpaceElevatorChip;
 import zmaster587.advancedRocketry.item.ItemSpaceStationContainer;
+import zmaster587.advancedRocketry.item.ItemThermite;
+import zmaster587.advancedRocketry.item.LegacyLoaderBlockItem;
 import zmaster587.advancedRocketry.item.ItemPlanetChip;
 import zmaster587.advancedRocketry.item.ItemSatellite;
 import zmaster587.advancedRocketry.item.ItemSatelliteChip;
@@ -51,7 +56,8 @@ public class AdvancedRocketryItems {
 	//Misc components
 	public static Item itemUserInterface = new Item(typicalProperties).setRegistryName("userinterface");
 	public static Item itemCarbonBrick = new Item(typicalProperties).setRegistryName("carbonbrick");
-	public static Item itemSawBlade = new Item(typicalProperties).setRegistryName("sawblade");
+	public static Item itemSawBlade = new Item(typicalProperties).setRegistryName("sawbladeiron");
+	public static Item itemLens = new Item(typicalProperties).setRegistryName("lens");
 	public static Item itemCarbonScrubberCartridge = new Item(new Item.Properties().group(AdvancedRocketry.tabAdvRocketry).defaultMaxDamage(Short.MAX_VALUE-1)).setRegistryName("carbonscrubbercartridge"); //Short.MAX_VALUE is forge's wildcard, don't use it
 	//Circuit components
 	public static Item itemSiliconWafer = new Item(typicalProperties).setRegistryName("siliconwafer");
@@ -69,27 +75,41 @@ public class AdvancedRocketryItems {
 	public static Item itemSatelliteChip = new ItemSatelliteChip(typicalProperties).setRegistryName("satellitechip");
 	public static Item itemPlanetChip = new ItemPlanetChip(typicalProperties).setRegistryName("planetchip");
 	public static Item itemSpaceStationContainer = new ItemSpaceStationContainer(singleStackSize).setRegistryName("spacestationcontainer");
+	public static Item itemSpaceElevatorChip = new ItemSpaceElevatorChip(singleStackSize).setRegistryName("elevatorchip");
 	//Satellite stuff
-	public static Item itemSolarPanel = new Item(typicalProperties).setRegistryName("solarpanel");
+	public static Item itemSolarPanel = new Item(typicalProperties).setRegistryName("basicsolarpanel");
 	public static Item itemLargeSolarPanel = new Item(typicalProperties).setRegistryName("largesolarpanel");
 	public static Item itemOpticalSensor = new Item(typicalProperties).setRegistryName("opticalsensor");
 	public static Item itemCompositionSensor = new Item(typicalProperties).setRegistryName("compositionsensor");
 	public static Item itemMassSensor = new Item(typicalProperties).setRegistryName("masssensor");
 	public static Item itemMicrowaveTransmitter = new Item(typicalProperties).setRegistryName("microwavetransmitter");
 	public static Item itemOreSensor = new Item(typicalProperties).setRegistryName("oresensor");
+	public static Item itemBiomeChanger = new Item(typicalProperties).setRegistryName("biomechangercomponent");
+	public static Item itemBiomeChangerRemote = new ItemBiomeChanger(singleStackSize).setRegistryName("biomechanger");
 	public static Item itemDataUnit = new ItemDataChip(singleStackSize).setRegistryName("dataunit");
 	public static Item itemSatellite = new ItemSatellite(singleStackSize).setRegistryName("satellite");
 	//Suit Component Registration
 	public static Item itemJetpack = new ItemJetpack(singleStackSize).setRegistryName("jetpack");
-	public static Item itemAluminumPressureTank = new ItemPressureTank(new Item.Properties().group(AdvancedRocketry.tabAdvRocketry).maxStackSize(4), 2000).setRegistryName("aluminumpressuretank");
-	public static Item itemSteelPressureTank = new ItemPressureTank(new Item.Properties().group(AdvancedRocketry.tabAdvRocketry).maxStackSize(4), 4000).setRegistryName("steelpressuretank");
-	public static Item itemTitaniumPressureTank = new ItemPressureTank(new Item.Properties().group(AdvancedRocketry.tabAdvRocketry).maxStackSize(4), 16000).setRegistryName("titaniumpressuretank");
+	public static Item itemIronPressureTank = new ItemPressureTank(new Item.Properties().group(AdvancedRocketry.tabAdvRocketry).maxStackSize(4), 1000).setRegistryName("ironpressuretank");
+	public static Item itemSteelPressureTank = new ItemPressureTank(new Item.Properties().group(AdvancedRocketry.tabAdvRocketry).maxStackSize(4), 2000).setRegistryName("steelpressuretank");
+	public static Item itemAluminumPressureTank = new ItemPressureTank(new Item.Properties().group(AdvancedRocketry.tabAdvRocketry).maxStackSize(4), 4000).setRegistryName("aluminumpressuretank");
+	public static Item itemTitaniumPressureTank = new ItemPressureTank(new Item.Properties().group(AdvancedRocketry.tabAdvRocketry).maxStackSize(4), 8000).setRegistryName("titaniumpressuretank");
 	public static Item itemHoverUpgrade = new ItemUpgrade(singleStackSize).setRegistryName("hoverupgrade");
 	public static Item itemFlightSpeedUpgrade = new ItemUpgrade(singleStackSize).setRegistryName("flightspeedupgrade");
 	public static Item itemBionicLegsUpgrade = new ItemUpgrade(singleStackSize).setRegistryName("bioniclegsupgrade");
 	public static Item itemPaddedBootsUpgrade = new ItemUpgrade(singleStackSize).setRegistryName("paddedbootsupgrade");
 	public static Item itemAntiFogVisorUpgrade = new ItemUpgrade(singleStackSize).setRegistryName("antifogvisorupgrade");
+	public static Item itemEarthbrightVisorUpgrade = new ItemUpgrade(singleStackSize).setRegistryName("earthbrightvisorupgrade");
 	public static Item itemBeaconFinderUpgrade = new ItemBeaconFinder(singleStackSize).setRegistryName("beaconfinderupgrade");
+	// Transitional registry entries preserve the metadata of 1.12.2 ItemStacks until
+	// LegacyItemStackMigration can replace them with the split 1.16.5 items.
+	public static Item itemLegacyCircuitPlate = new Item(typicalProperties).setRegistryName("itemcircuitplate");
+	public static Item itemLegacyIC = new Item(typicalProperties).setRegistryName("ic");
+	public static Item itemLegacyMisc = new Item(typicalProperties).setRegistryName("misc");
+	public static Item itemLegacyUpgrade = new Item(singleStackSize).setRegistryName("itemupgrade");
+	public static Item itemLegacyPressureTank = new Item(singleStackSize).setRegistryName("pressuretank");
+	public static Item itemLegacySatellitePowerSource = new Item(typicalProperties).setRegistryName("satellitepowersource");
+	public static Item itemLegacySatellitePrimaryFunction = new Item(typicalProperties).setRegistryName("satelliteprimaryfunction");
 	//Armor registration
 	public static Item itemSpaceSuitHelmet = new ItemSpaceArmor(singleStackSize, net.minecraft.item.ArmorMaterial.LEATHER, EquipmentSlotType.HEAD,4).setRegistryName("spacesuithelmet");
 	public static Item itemSpaceSuitChestpiece = new ItemSpaceChest(singleStackSize, net.minecraft.item.ArmorMaterial.LEATHER, EquipmentSlotType.CHEST,6).setRegistryName("spacesuitchestpiece");
@@ -101,9 +121,12 @@ public class AdvancedRocketryItems {
 	public static Item itemOreScanner = new ItemOreScanner(singleStackSize).setRegistryName("orescanner");
 	public static Item itemJackhammer = new ItemJackhammer(ItemTier.DIAMOND, new Item.Properties().group(AdvancedRocketry.tabAdvRocketry).maxStackSize(1).maxDamage(1500)).setRegistryName("jackhammer");
 	public static Item itemHovercraft = new ItemHovercraft(singleStackSize).setRegistryName("hovercraft");
-	//public static Item itemBasicLaserGun = new ItemBasicLaserGun(typicalProperties).setRegistryName("basic_laser_gun");
+	public static Item itemBasicLaserGun = new ItemBasicLaserGun(singleStackSize).setRegistryName("basic_laser_gun");
+	public static Item itemThermite = new ItemThermite(typicalProperties).setRegistryName("thermite");
     //Weird block-items
 	public static Item itemSmallAirlockDoor = new TallBlockItem(AdvancedRocketryBlocks.blockSmallAirlockDoor, singleStackSize).setRegistryName("smallairlockdoor");
+	public static Item itemLegacyLoader = new LegacyLoaderBlockItem(AdvancedRocketryBlocks.blockLegacyLoader,
+			new Item.Properties().group(AdvancedRocketry.tabAdvRocketry)).setRegistryName("loader");
 
 
 
@@ -189,6 +212,7 @@ public class AdvancedRocketryItems {
 	public static Item itemPressureTank = new BlockItem(AdvancedRocketryBlocks.blockPressureTank, typicalBlockProperties);
 	public static Item itemIntake = new BlockItem(AdvancedRocketryBlocks.blockIntake, typicalBlockProperties);
 	public static Item itemStationLight = new BlockItem(AdvancedRocketryBlocks.blockStationLight, typicalBlockProperties);
+	public static Item itemSolarPanelBlock = new BlockItem(AdvancedRocketryBlocks.blockSolarPanel, typicalBlockProperties);
 	public static Item itemSolarGenerator = new BlockItem(AdvancedRocketryBlocks.blockSolarGenerator, typicalBlockProperties);
 	public static Item itemStationDockingPort = new BlockItem(AdvancedRocketryBlocks.blockStationDockingPort, typicalBlockProperties);
 	public static Item itemAltitudeController = new BlockItem(AdvancedRocketryBlocks.blockAltitudeController, typicalBlockProperties);
@@ -197,6 +221,10 @@ public class AdvancedRocketryItems {
 	public static Item itemHolographicPlanetSelector = new BlockItem(AdvancedRocketryBlocks.blockHolographicPlanetSelector, typicalBlockProperties);
 	public static Item itemLensBlock = new BlockItem(AdvancedRocketryBlocks.blockLens, typicalBlockProperties);
 	public static Item itemForceFieldProjector = new BlockItem(AdvancedRocketryBlocks.blockForceFieldProjector, typicalBlockProperties);
+	// Hidden implementation BlockItems existed in 1.12. Keep them registered so
+	// command-created stacks and old inventory NBT survive an upgrade.
+	public static Item itemForceField = new BlockItem(AdvancedRocketryBlocks.blockForceField, new Item.Properties());
+	public static Item itemLightSource = new BlockItem(AdvancedRocketryBlocks.blockLightSource, new Item.Properties());
 	public static Item itemAreaGravityController = new BlockItem(AdvancedRocketryBlocks.blockAreaGravityController, typicalBlockProperties);
 	public static Item itemSeal = new BlockItem(AdvancedRocketryBlocks.blockSeal, typicalBlockProperties);
 	public static Item itemSpaceElevator = new BlockItem(AdvancedRocketryBlocks.blockSpaceElevator, typicalBlockProperties);
@@ -223,6 +251,7 @@ public class AdvancedRocketryItems {
 				AdvancedRocketryItems.itemUserInterface,
 				AdvancedRocketryItems.itemCarbonBrick,
 				AdvancedRocketryItems.itemSawBlade,
+				AdvancedRocketryItems.itemLens,
 				AdvancedRocketryItems.itemCarbonScrubberCartridge,
 		        //Circuit components
 		        AdvancedRocketryItems.itemSiliconWafer,
@@ -240,6 +269,7 @@ public class AdvancedRocketryItems {
 	         	AdvancedRocketryItems.itemSatelliteChip,
 				AdvancedRocketryItems.itemPlanetChip,
 	         	AdvancedRocketryItems.itemSpaceStationContainer,
+				AdvancedRocketryItems.itemSpaceElevatorChip,
 	        	//Satellite stuff
 		        AdvancedRocketryItems.itemSolarPanel,
 				AdvancedRocketryItems.itemLargeSolarPanel,
@@ -248,10 +278,13 @@ public class AdvancedRocketryItems {
 				AdvancedRocketryItems.itemMassSensor,
 				AdvancedRocketryItems.itemMicrowaveTransmitter,
 				AdvancedRocketryItems.itemOreSensor,
+				AdvancedRocketryItems.itemBiomeChanger,
+				AdvancedRocketryItems.itemBiomeChangerRemote,
 				AdvancedRocketryItems.itemDataUnit,
 				AdvancedRocketryItems.itemSatellite,
 		        //Suit Component Registration
 				AdvancedRocketryItems.itemJetpack,
+				AdvancedRocketryItems.itemIronPressureTank,
 				AdvancedRocketryItems.itemAluminumPressureTank,
 				AdvancedRocketryItems.itemSteelPressureTank,
 				AdvancedRocketryItems.itemTitaniumPressureTank,
@@ -260,7 +293,15 @@ public class AdvancedRocketryItems {
 				AdvancedRocketryItems.itemBionicLegsUpgrade,
 				AdvancedRocketryItems.itemPaddedBootsUpgrade,
 				AdvancedRocketryItems.itemAntiFogVisorUpgrade,
+				AdvancedRocketryItems.itemEarthbrightVisorUpgrade,
 				AdvancedRocketryItems.itemBeaconFinderUpgrade,
+				AdvancedRocketryItems.itemLegacyCircuitPlate,
+				AdvancedRocketryItems.itemLegacyIC,
+				AdvancedRocketryItems.itemLegacyMisc,
+				AdvancedRocketryItems.itemLegacyUpgrade,
+				AdvancedRocketryItems.itemLegacyPressureTank,
+				AdvancedRocketryItems.itemLegacySatellitePowerSource,
+				AdvancedRocketryItems.itemLegacySatellitePrimaryFunction,
 		        //Armor registration
 		        AdvancedRocketryItems.itemSpaceSuitHelmet,
 				AdvancedRocketryItems.itemSpaceSuitChestpiece,
@@ -272,9 +313,11 @@ public class AdvancedRocketryItems {
 		        AdvancedRocketryItems.itemOreScanner,
 		        AdvancedRocketryItems.itemJackhammer,
 				AdvancedRocketryItems.itemHovercraft,
-		        //AdvancedRocketryItems.itemBasicLaserGun,
+				AdvancedRocketryItems.itemBasicLaserGun,
+				AdvancedRocketryItems.itemThermite,
 		        //Weird block-items
 		        AdvancedRocketryItems.itemSmallAirlockDoor
+				, AdvancedRocketryItems.itemLegacyLoader
 				);
 		
 		evt.getRegistry().registerAll(
@@ -351,17 +394,19 @@ public class AdvancedRocketryItems {
 				AdvancedRocketryItems.itemOxygenScrubber.setRegistryName("oxygenscrubber"),
 				AdvancedRocketryItems.itemGasChargePad.setRegistryName("gaschargepad"),
 
-				AdvancedRocketryItems.itemSawbladeAssembly.setRegistryName("sawbladeassembly"),
+				AdvancedRocketryItems.itemSawbladeAssembly.setRegistryName("sawblade"),
 				AdvancedRocketryItems.itemQuartzCrucible.setRegistryName("quartzcrucible"),
-				AdvancedRocketryItems.itemLensBlock.setRegistryName("lens"),
+				AdvancedRocketryItems.itemLensBlock.setRegistryName("blocklens"),
 				AdvancedRocketryItems.itemConcrete.setRegistryName("concrete"),
 				AdvancedRocketryItems.itemBlastBrick.setRegistryName("blastbrick"),
 				AdvancedRocketryItems.itemSeal.setRegistryName("seal"),
 				AdvancedRocketryItems.itemLaser.setRegistryName("laser"),
 				AdvancedRocketryItems.itemForceFieldProjector.setRegistryName("forcefieldprojector"),
+				AdvancedRocketryItems.itemForceField.setRegistryName("forcefield"),
+				AdvancedRocketryItems.itemLightSource.setRegistryName("lightsource"),
 				//Misc non-multiblock machines
 				AdvancedRocketryItems.itemSuitWorkStation.setRegistryName("suitworkstation"),
-				AdvancedRocketryItems.itemPressureTank.setRegistryName("pressuretank"),
+				AdvancedRocketryItems.itemPressureTank.setRegistryName("liquidtank"),
 				AdvancedRocketryItems.itemPump.setRegistryName("pump"),
 				AdvancedRocketryItems.itemSmallPlatePress.setRegistryName("smallplatepress"),
 				//MULTIBLOCK MACHINES
@@ -384,6 +429,7 @@ public class AdvancedRocketryItems {
 				AdvancedRocketryItems.itemObservatory.setRegistryName("observatory"),
 				AdvancedRocketryItems.itemAstrobodyDataProcessor.setRegistryName("astrobodydataprocessor"),
 				//Energy production
+				AdvancedRocketryItems.itemSolarPanelBlock.setRegistryName("solarpanel"),
 				AdvancedRocketryItems.itemSolarGenerator.setRegistryName("solargenerator"),
 				AdvancedRocketryItems.itemSolarArrayPanel.setRegistryName("solararraypanel"),
 				AdvancedRocketryItems.itemSolarArray.setRegistryName("solararray"),

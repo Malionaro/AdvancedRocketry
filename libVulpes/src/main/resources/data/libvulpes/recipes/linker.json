@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "x",
+        "y",
+        "z"
+    ],
+    "key": {
+        "x": {
+            "tag": "forge:dusts/redstone"
+        },
+        "y": {
+            "tag": "forge:ingots/gold"
+        },
+    	"z": {
+            "tag": "forge:ingots/iron"
+        }
+    },
+    "result": {
+        "item": "libvulpes:linker",
+        "count": 1
+    }
+}

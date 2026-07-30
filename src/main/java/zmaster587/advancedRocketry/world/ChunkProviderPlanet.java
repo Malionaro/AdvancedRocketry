@@ -5,6 +5,8 @@ package zmaster587.advancedRocketry.world;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityClassification;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SharedSeedRandom;
@@ -19,6 +21,7 @@ import net.minecraft.world.Blockreader;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeGenerationSettings;
 import net.minecraft.world.biome.BiomeManager;
 import net.minecraft.world.biome.MobSpawnInfo;
 import net.minecraft.world.biome.provider.BiomeProvider;
@@ -27,6 +30,14 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.*;
+import net.minecraft.world.gen.carver.CanyonWorldCarver;
+import net.minecraft.world.gen.carver.CaveWorldCarver;
+import net.minecraft.world.gen.carver.ConfiguredCarver;
+import net.minecraft.world.gen.carver.ConfiguredCarvers;
+import net.minecraft.world.gen.carver.NetherCaveCarver;
+import net.minecraft.world.gen.feature.Feature;
+import net.minecraft.world.gen.feature.OreFeatureConfig;
+import net.minecraft.world.gen.feature.ProbabilityConfig;
 import net.minecraft.world.gen.feature.StructureFeature;
 import net.minecraft.world.gen.feature.jigsaw.JigsawJunction;
 import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
@@ -36,6 +47,7 @@ import net.minecraft.world.gen.feature.structure.StructureFeatures;
 import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.structure.StructurePiece;
 import net.minecraft.world.gen.feature.structure.StructureStart;
+import net.minecraft.world.gen.feature.template.BlockMatchRuleTest;
 import net.minecraft.world.gen.feature.template.TemplateManager;
 import net.minecraft.world.gen.settings.DimensionStructuresSettings;
 import net.minecraft.world.gen.settings.NoiseSettings;
@@ -45,7 +57,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
+import zmaster587.advancedRocketry.api.Constants;
+import zmaster587.advancedRocketry.util.OreGenProperties;
+import zmaster587.advancedRocketry.util.OreGenProperties.OreEntry;
+import zmaster587.libVulpes.api.material.AllowedProducts;
+import zmaster587.libVulpes.api.material.MaterialRegistry;
+import zmaster587.libVulpes.config.LibVulpesConfig;
 
+import java.util.BitSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
@@ -112,6 +132,11 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 	ResourceLocation dimensionId;
 	private final DimensionStructuresSettings settings;
 	private final List<Supplier<StructureFeature<?, ?>>> starts;
+	private final ConfiguredCarver<ProbabilityConfig> planetCave;
+	private final ConfiguredCarver<ProbabilityConfig> planetCanyon;
+	private final ConfiguredCarver<ProbabilityConfig> cavePlanetNetherCave;
+	private final ConfiguredCarver<ProbabilityConfig> cavePlanetHighCave;
+	private final ConfiguredCarver<ProbabilityConfig> cavePlanetMassiveCanyon;
 
 	public ChunkProviderPlanet(BiomeProvider biomeProvider, long seed, Supplier<DimensionSettings> settings, List<Supplier<StructureFeature<?, ?>>> starts, ResourceLocation dimensionProps) {
 		this(biomeProvider, biomeProvider, seed, settings, starts, dimensionProps);
@@ -123,6 +148,10 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 
 	private ChunkProviderPlanet(BiomeProvider biomeProvider, BiomeProvider biomeProvider2, long seed, Supplier<DimensionSettings> settings, List<Supplier<StructureFeature<?, ?>>> starts, ResourceLocation dimensionProps) {
 		super(biomeProvider, biomeProvider2, settings.get().getStructures(), seed);
+		if(biomeProvider instanceof CustomPlanetBiomeProvider)
+			((CustomPlanetBiomeProvider)biomeProvider).setDimensionPropertiesId(dimensionProps);
+		if(biomeProvider2 instanceof CustomPlanetBiomeProvider)
+			((CustomPlanetBiomeProvider)biomeProvider2).setDimensionPropertiesId(dimensionProps);
 		this.seed = seed;
 		this.settings = settings.get().getStructures();
 		dimensionId = dimensionProps;
@@ -154,6 +183,16 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 		}
 
 		this.starts = starts;
+		this.planetCave = new PlanetCaveWorldCarver(ProbabilityConfig.CODEC, 256, this.defaultBlock)
+				.func_242761_a(new ProbabilityConfig(0.14285715F));
+		this.planetCanyon = new PlanetCanyonWorldCarver(ProbabilityConfig.CODEC, this.defaultBlock)
+				.func_242761_a(new ProbabilityConfig(0.02F));
+		this.cavePlanetNetherCave = new PlanetNetherCaveWorldCarver(ProbabilityConfig.CODEC, this.defaultBlock)
+				.func_242761_a(new ProbabilityConfig(0.2F));
+		this.cavePlanetHighCave = new PlanetHighCaveWorldCarver(ProbabilityConfig.CODEC, 256, this.defaultBlock)
+				.func_242761_a(new ProbabilityConfig(0.14285715F));
+		this.cavePlanetMassiveCanyon = new PlanetMassiveCanyonWorldCarver(ProbabilityConfig.CODEC, this.defaultBlock)
+				.func_242761_a(new ProbabilityConfig(0.02F));
 	}
 
 	@Nonnull
@@ -162,7 +201,7 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 	}
 
 
-	private DimensionProperties getDimensionProperties()
+	public DimensionProperties getDimensionProperties()
 	{
 		if(cachedDimensionProps == null || !cachedDimensionProps.getId().equals(dimensionId))
 			cachedDimensionProps = DimensionManager.getInstance().getDimensionProperties(dimensionId);
@@ -192,7 +231,10 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 		}
 
 		for(Supplier<StructureFeature<?, ?>> supplier : starts) {
-			this.func_242705_a(supplier.get(), dynamicRegistry, structureManager, p_242707_3_, templateManager, p_242707_5_, chunkpos, biome);
+			StructureFeature<?, ?> structureFeature = supplier.get();
+			if(structureFeature != StructureFeatures.VILLAGE_PLAINS || biome.getCategory() != Biome.Category.OCEAN) {
+				this.func_242705_a(structureFeature, dynamicRegistry, structureManager, p_242707_3_, templateManager, p_242707_5_, chunkpos, biome);
+			}
 		}
 	}
 
@@ -249,6 +291,17 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 	}
 
 	private void fillNoiseColumn(double[] noiseColumn, int noiseX, int noiseZ) {
+		fillNoiseColumnBase(noiseColumn, noiseX, noiseZ);
+
+		DimensionProperties properties = getDimensionProperties();
+		if(properties.getGenType() == Constants.GENTYPE_CAVE) {
+			applyCavePlanetTerrain(noiseColumn, noiseX, noiseZ);
+		} else if(properties.isAsteroid()) {
+			applyAsteroidTerrain(noiseColumn, noiseX, noiseZ);
+		}
+	}
+
+	private void fillNoiseColumnBase(double[] noiseColumn, int noiseX, int noiseZ) {
 		NoiseSettings noisesettings = this.dimensionSettings.get().getNoise();
 		double d0;
 		double d1;
@@ -335,7 +388,85 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 
 			noiseColumn[i1] = d7;
 		}
+	}
 
+	/**
+	 * Recreates the two-layer terrain produced by the 1.12
+	 * {@code ChunkProviderCavePlanet}. Its lower 128 blocks used Nether-like
+	 * density noise while blocks 16-127 from the normal planet terrain were
+	 * copied to 128-239.
+	 *
+	 * Working at noise-column resolution keeps height lookups and actual chunk
+	 * generation in agreement, which a block-level copy after generation would
+	 * not do.
+	 */
+	private void applyCavePlanetTerrain(double[] noiseColumn, int noiseX, int noiseZ) {
+		if(this.noiseSizeY < 16 || noiseColumn.length <= this.noiseSizeY) {
+			return;
+		}
+
+		double[] normalTerrain = noiseColumn.clone();
+		int layerBoundary = Math.min(16, this.noiseSizeY / 2);
+
+		// The upper layer starts at y=128 and is the old y=16..127 terrain
+		// shifted upward by 112 blocks. Keep the original top-air samples.
+		for(int target = layerBoundary; target <= Math.min(30, this.noiseSizeY); ++target) {
+			int source = target - 14;
+			if(source >= 0 && source < normalTerrain.length) {
+				noiseColumn[target] = normalTerrain[source];
+			}
+		}
+
+		// This is the density curve from the old cave provider's getHeights()
+		// method, expressed on 1.16's eight-block vertical noise lattice.
+		for(int y = 0; y < layerBoundary; ++y) {
+			double edgeShape = Math.cos((double)y * Math.PI * 6.0D / 17.0D) * 2.0D;
+			double edgeDistance = y;
+			if(y > 8) {
+				edgeDistance = 16 - y;
+			}
+			if(edgeDistance < 4.0D) {
+				double edge = 4.0D - edgeDistance;
+				edgeShape -= edge * edge * edge * 10.0D;
+			}
+
+			double density = this.func_222552_a(noiseX, y, noiseZ,
+					684.412D, 2053.236D, 8.555150000000001D, 34.2206D) - edgeShape;
+			if(y > 13) {
+				double blend = (double)(y - 13) / 3.0D;
+				density = density * (1.0D - blend) - 10.0D * blend;
+			}
+			noiseColumn[y] = density;
+		}
+	}
+
+	/**
+	 * Restores the second asteroid band from the 1.12 generator. The old code
+	 * generated another independent island field 100 blocks higher, sampling
+	 * the noise 500 chunks away so both bands did not line up vertically.
+	 */
+	private void applyAsteroidTerrain(double[] noiseColumn, int noiseX, int noiseZ) {
+		if(this.verticalNoiseGranularity <= 0 || noiseColumn.length <= this.noiseSizeY) {
+			return;
+		}
+
+		double[] upperBand = new double[noiseColumn.length];
+		int horizontalOffset = 500 * this.noiseSizeX;
+		fillNoiseColumnBase(upperBand, noiseX + horizontalOffset, noiseZ + horizontalOffset);
+
+		int targetStart = MathHelper.ceil(100.0D / this.verticalNoiseGranularity);
+		int targetEnd = Math.min(this.noiseSizeY,
+				MathHelper.ceil(228.0D / this.verticalNoiseGranularity));
+		for(int target = targetStart; target <= targetEnd; ++target) {
+			double sourceIndex = ((double)target * this.verticalNoiseGranularity - 100.0D)
+					/ this.verticalNoiseGranularity;
+			int lower = MathHelper.floor(sourceIndex);
+			int upper = Math.min(lower + 1, upperBand.length - 1);
+			if(lower >= 0 && lower < upperBand.length) {
+				noiseColumn[target] = MathHelper.lerp(sourceIndex - lower,
+						upperBand[lower], upperBand[upper]);
+			}
+		}
 	}
 
 	private double func_236095_c_(int p_236095_1_, int p_236095_2_) {
@@ -364,9 +495,60 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 
 	@ParametersAreNonnullByDefault
 	public void func_230350_a_(long p_230350_1_, BiomeManager biomeManager, IChunk p_230350_4_, GenerationStage.Carving p_230350_5_) {
-		super.func_230350_a_(p_230350_1_, biomeManager, p_230350_4_, p_230350_5_);
+		BiomeManager planetBiomeManager = biomeManager.copyWithProvider(this.biomeProvider);
+		SharedSeedRandom random = new SharedSeedRandom();
+		ChunkPos chunkPos = p_230350_4_.getPos();
+		int chunkX = chunkPos.x;
+		int chunkZ = chunkPos.z;
+		BiomeGenerationSettings generationSettings = this.biomeProvider
+				.getNoiseBiome(chunkX << 2, 0, chunkZ << 2)
+				.getGenerationSettings();
+		BitSet carvingMask = ((ChunkPrimer)p_230350_4_).getOrAddCarvingMask(p_230350_5_);
+		boolean generatePlanetCaves = p_230350_5_ == GenerationStage.Carving.AIR
+				&& getDimensionProperties().canGenerateCaves();
+		boolean cavePlanet = p_230350_5_ == GenerationStage.Carving.AIR
+				&& getDimensionProperties().getGenType() == Constants.GENTYPE_CAVE;
 
-		//TODO: add planet specific carving
+		for(int sourceChunkX = chunkX - 8; sourceChunkX <= chunkX + 8; ++sourceChunkX) {
+			for(int sourceChunkZ = chunkZ - 8; sourceChunkZ <= chunkZ + 8; ++sourceChunkZ) {
+				List<Supplier<ConfiguredCarver<?>>> biomeCarvers = generationSettings.getCarvers(p_230350_5_);
+				int carverIndex = 0;
+
+				for(Supplier<ConfiguredCarver<?>> carverSupplier : biomeCarvers) {
+					ConfiguredCarver<?> carver = carverSupplier.get();
+					if(carver != ConfiguredCarvers.CAVE && carver != ConfiguredCarvers.CANYON) {
+						runCarver(carver, p_230350_1_, carverIndex, random, planetBiomeManager,
+								p_230350_4_, sourceChunkX, sourceChunkZ, chunkX, chunkZ, carvingMask);
+					}
+					++carverIndex;
+				}
+
+				if(generatePlanetCaves) {
+					runCarver(this.planetCave, p_230350_1_, 14357622, random, planetBiomeManager,
+							p_230350_4_, sourceChunkX, sourceChunkZ, chunkX, chunkZ, carvingMask);
+					runCarver(this.planetCanyon, p_230350_1_, 14357623, random, planetBiomeManager,
+							p_230350_4_, sourceChunkX, sourceChunkZ, chunkX, chunkZ, carvingMask);
+				}
+				if(cavePlanet) {
+					runCarver(this.cavePlanetNetherCave, p_230350_1_, 14357625, random, planetBiomeManager,
+							p_230350_4_, sourceChunkX, sourceChunkZ, chunkX, chunkZ, carvingMask);
+					runCarver(this.cavePlanetHighCave, p_230350_1_, 14357626, random, planetBiomeManager,
+							p_230350_4_, sourceChunkX, sourceChunkZ, chunkX, chunkZ, carvingMask);
+					runCarver(this.cavePlanetMassiveCanyon, p_230350_1_, 14357627, random, planetBiomeManager,
+							p_230350_4_, sourceChunkX, sourceChunkZ, chunkX, chunkZ, carvingMask);
+				}
+			}
+		}
+	}
+
+	private void runCarver(ConfiguredCarver<?> carver, long seed, int salt, SharedSeedRandom random,
+			BiomeManager biomeManager, IChunk chunk, int sourceChunkX, int sourceChunkZ,
+			int chunkX, int chunkZ, BitSet carvingMask) {
+		random.setLargeFeatureSeed(seed + salt, sourceChunkX, sourceChunkZ);
+		if(carver.shouldCarve(random, sourceChunkX, sourceChunkZ)) {
+			carver.carveRegion(chunk, biomeManager::getBiome, random, getSeaLevel(),
+					sourceChunkX, sourceChunkZ, chunkX, chunkZ, carvingMask);
+		}
 	}
 
 	private int func_236087_a_(int p_236087_1_, int p_236087_2_, @Nullable BlockState[] p_236087_3_, @Nullable Predicate<BlockState> p_236087_4_) {
@@ -446,6 +628,90 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 		}
 
 		this.makeBedrock(p_225551_2_, sharedseedrandom);
+	}
+
+	@Override
+	@ParametersAreNonnullByDefault
+	public void func_230351_a_(WorldGenRegion world, StructureManager structureManager) {
+		super.func_230351_a_(world, structureManager);
+		generateAirlessDilithium(world);
+
+		OreGenProperties oreProperties = getDimensionProperties().getOreGenProperties(world.getWorld());
+		if(oreProperties == null || oreProperties.getOreEntries().isEmpty()) {
+			return;
+		}
+
+		int chunkX = world.getMainChunkX();
+		int chunkZ = world.getMainChunkZ();
+		SharedSeedRandom random = new SharedSeedRandom();
+		random.setLargeFeatureSeedWithSalt(world.getSeed(), chunkX, chunkZ, 14357624);
+		BlockMatchRuleTest target = new BlockMatchRuleTest(this.defaultBlock.getBlock());
+
+		for(OreEntry entry : oreProperties.getOreEntries()) {
+			int minHeight = Math.max(0, entry.getMinHeight());
+			int maxHeight = Math.min(getMaxBuildHeight(), entry.getMaxHeight());
+			if(maxHeight <= minHeight || entry.getClumpSize() <= 0 || entry.getChancePerChunk() <= 0) {
+				continue;
+			}
+
+			OreFeatureConfig config = new OreFeatureConfig(target, entry.getBlockState(), entry.getClumpSize());
+			for(int attempt = 0; attempt < entry.getChancePerChunk(); ++attempt) {
+				BlockPos position = new BlockPos(
+						(chunkX << 4) + random.nextInt(16),
+						minHeight + random.nextInt(maxHeight - minHeight),
+						(chunkZ << 4) + random.nextInt(16));
+				Feature.ORE.generate(world, this, random, position, config);
+			}
+		}
+	}
+
+	/**
+	 * The 1.12 ore generator used a separate, normally much higher dilithium
+	 * vein count for airless Advanced Rocketry planets. Biome features cannot
+	 * express a per-dimension atmosphere condition, so the additional veins
+	 * are generated here after the normal LibVulpes biome feature.
+	 */
+	private void generateAirlessDilithium(WorldGenRegion world) {
+		LibVulpesConfig config = LibVulpesConfig.getCurrentConfig();
+		if(!config.enableOreGen.get() || !config.generateDilithium.get()
+				|| DimensionProperties.AtmosphereTypes.getAtmosphereTypeFromValue(
+						getDimensionProperties().getAtmosphereDensity())
+						!= DimensionProperties.AtmosphereTypes.NONE) {
+			return;
+		}
+
+		int additionalVeins = Math.max(0,
+				config.dilithiumPerChunkMoon.get() - config.dilithiumPerChunk.get());
+		int minHeight = Math.max(0, config.dilithiumMinHeight.get());
+		int maxHeight = Math.min(getMaxBuildHeight(),
+				Math.max(minHeight + 1, config.dilithiumMaxHeight.get()));
+		if(additionalVeins == 0 || maxHeight <= minHeight) {
+			return;
+		}
+
+		Item dilithiumOre = MaterialRegistry.getMaterialFromName("dilithium")
+				.getProduct(AllowedProducts.getProductByName("ORE")).getItem();
+		if(!(dilithiumOre instanceof BlockItem)) {
+			logger.warn("Cannot generate extra airless-planet dilithium: ore product is not a block item");
+			return;
+		}
+
+		int chunkX = world.getMainChunkX();
+		int chunkZ = world.getMainChunkZ();
+		SharedSeedRandom random = new SharedSeedRandom();
+		random.setLargeFeatureSeedWithSalt(world.getSeed(), chunkX, chunkZ, 14357628);
+		OreFeatureConfig oreConfig = new OreFeatureConfig(
+				new BlockMatchRuleTest(this.defaultBlock.getBlock()),
+				((BlockItem)dilithiumOre).getBlock().getDefaultState(),
+				Math.max(1, config.dilithiumClumpSize.get()));
+
+		for(int attempt = 0; attempt < additionalVeins; ++attempt) {
+			BlockPos position = new BlockPos(
+					(chunkX << 4) + random.nextInt(16),
+					minHeight + random.nextInt(maxHeight - minHeight),
+					(chunkZ << 4) + random.nextInt(16));
+			Feature.ORE.generate(world, this, random, position, oreConfig);
+		}
 	}
 
 	private void makeBedrock(IChunk chunkIn, Random rand) {
@@ -632,7 +898,7 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 	@Override
 	@ParametersAreNonnullByDefault
 	public int getHeight(int x, int z, Heightmap.Type heightmapType) {
-		return 0;
+		return this.func_236087_a_(x, z, null, heightmapType.getHeightLimitPredicate());
 	}
 
 	private static double func_222556_a(int p_222556_0_, int p_222556_1_, int p_222556_2_) {
@@ -707,6 +973,59 @@ public class ChunkProviderPlanet extends ChunkGenerator {
 			SharedSeedRandom sharedseedrandom = new SharedSeedRandom();
 			sharedseedrandom.setDecorationSeed(p_230354_1_.getSeed(), i << 4, j << 4);
 			WorldEntitySpawner.performWorldGenSpawning(p_230354_1_, biome, i, j, sharedseedrandom);
+		}
+	}
+
+	private static class PlanetCaveWorldCarver extends CaveWorldCarver {
+		PlanetCaveWorldCarver(Codec<ProbabilityConfig> codec, int maxHeight, BlockState filler) {
+			super(codec, maxHeight);
+			this.carvableBlocks = new HashSet<>(this.carvableBlocks);
+			this.carvableBlocks.add(filler.getBlock());
+		}
+	}
+
+	private static class PlanetCanyonWorldCarver extends CanyonWorldCarver {
+		PlanetCanyonWorldCarver(Codec<ProbabilityConfig> codec, BlockState filler) {
+			super(codec);
+			this.carvableBlocks = new HashSet<>(this.carvableBlocks);
+			this.carvableBlocks.add(filler.getBlock());
+		}
+	}
+
+	private static class PlanetNetherCaveWorldCarver extends NetherCaveCarver {
+		PlanetNetherCaveWorldCarver(Codec<ProbabilityConfig> codec, BlockState filler) {
+			super(codec);
+			this.carvableBlocks = new HashSet<>(this.carvableBlocks);
+			this.carvableBlocks.add(filler.getBlock());
+		}
+	}
+
+	private static class PlanetHighCaveWorldCarver extends PlanetCaveWorldCarver {
+		PlanetHighCaveWorldCarver(Codec<ProbabilityConfig> codec, int maxHeight, BlockState filler) {
+			super(codec, maxHeight, filler);
+		}
+
+		@Override
+		protected int func_230361_b_(Random random) {
+			return random.nextInt(random.nextInt(64) + 8) + 90;
+		}
+	}
+
+	private static class PlanetMassiveCanyonWorldCarver extends PlanetCanyonWorldCarver {
+		PlanetMassiveCanyonWorldCarver(Codec<ProbabilityConfig> codec, BlockState filler) {
+			super(codec, filler);
+		}
+
+		@Override
+		public boolean carveRegion(IChunk chunk, java.util.function.Function<BlockPos, Biome> biomeFunction,
+				Random random, int seaLevel, int sourceChunkX, int sourceChunkZ, int chunkX, int chunkZ,
+				BitSet carvingMask, ProbabilityConfig config) {
+			boolean carved = false;
+			for(int i = 0; i < 24; ++i) {
+				carved |= super.carveRegion(chunk, biomeFunction, random, seaLevel, sourceChunkX, sourceChunkZ,
+						chunkX, chunkZ, carvingMask, config);
+			}
+			return carved;
 		}
 	}
 }

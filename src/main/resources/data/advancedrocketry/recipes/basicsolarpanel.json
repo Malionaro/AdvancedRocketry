@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "rrr",
+        "ggg",
+        "ppp"
+    ],
+    "key": {
+        "r": {
+            "tag": "forge:dusts/redstone"
+        },
+        "g": {
+            "tag": "forge:dusts/glowstone"
+        },
+        "p": {
+            "tag": "forge:plates/gold"
+        }
+    },
+    "result": {
+        "item": "advancedrocketry:basicsolarpanel",
+        "count": 1
+    }
+}

@@ -1749,14 +1749,18 @@ public class EntityRocket extends EntityRocketBase implements INetworkEntity, IE
 			}
 		}
 		
-		if(nbt.contains("destinationDimId"))
-			destinationDimId = new ResourceLocation(nbt.getString("destinationDimId"));
+		ResourceLocation legacyDestination = LegacyDimensionIdMigration.read(nbt, "destinationDimId");
+		if(legacyDestination != null)
+			destinationDimId = legacyDestination;
 
-		if(nbt.contains("lastDimensionFrom"))
-			lastDimensionFrom = new ResourceLocation(nbt.getString("lastDimensionFrom"));
+		ResourceLocation legacyLastDimension = LegacyDimensionIdMigration.read(nbt, "lastDimensionFrom");
+		if(legacyLastDimension != null)
+			lastDimensionFrom = legacyLastDimension;
 		//Satellite
-		if(nbt.contains("satellite")) {
-			CompoundNBT satalliteNbt = nbt.getCompound("satellite");
+		String satelliteKey = nbt.contains("satellite") ? "satellite"
+				: nbt.contains("satallite") ? "satallite" : null;
+		if(satelliteKey != null) {
+			CompoundNBT satalliteNbt = nbt.getCompound(satelliteKey);
 			satellite = SatelliteRegistry.createFromNBT(satalliteNbt);
 		}
 

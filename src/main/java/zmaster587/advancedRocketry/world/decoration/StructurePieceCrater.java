@@ -22,20 +22,31 @@ import net.minecraftforge.fluids.IFluidBlock;
 import zmaster587.advancedRocketry.api.AdvancedRocketryBiomes;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
+import zmaster587.advancedRocketry.world.decoration.StructureCrater.CraterType;
 import zmaster587.libVulpes.util.ZUtils;
 
 public class StructurePieceCrater extends ScatteredStructurePiece {
 
-	int chancePerChunk;
 	int radius;
 	int xCenter, zCenter;
+	CraterType craterType;
 
 	public StructurePieceCrater(Random random, int x, int z) {
-		super(AdvancedRocketryBiomes.STRUCTURE_PIECE_CRATER, random, x, 64, z, 128 + 32, 15, 128 + 32);
+		this(random, x, z, CraterType.NORMAL, false);
+	}
+
+	public StructurePieceCrater(Random random, int x, int z, CraterType craterType, boolean airless) {
+		this(random, x, z, craterType, chooseRadius(random, craterType, airless));
+	}
+
+	private StructurePieceCrater(Random random, int x, int z, CraterType craterType, int radius) {
+		super(AdvancedRocketryBiomes.STRUCTURE_PIECE_CRATER, random, x, 64, z,
+				getStructureDiameter(craterType), 64, getStructureDiameter(craterType));
 		this.setCoordBaseMode(null);
-		radius = random.nextInt(56) + 8; //64; 8 -> 64
+		this.radius = radius;
 		xCenter = x;
 		zCenter = z;
+		this.craterType = craterType;
 	}
 
     public StructurePieceCrater(TemplateManager mgr, CompoundNBT piece) {
@@ -43,6 +54,15 @@ public class StructurePieceCrater extends ScatteredStructurePiece {
         radius = piece.getInt("Radius");
         xCenter = piece.getInt("xCenter");
         zCenter =  piece.getInt("zCenter");
+		if(piece.contains("CraterType")) {
+			int savedType = piece.getInt("CraterType");
+			craterType = savedType >= 0 && savedType < CraterType.values().length
+					? CraterType.values()[savedType]
+					: CraterType.NORMAL;
+		}
+		else {
+			craterType = CraterType.NORMAL;
+		}
      }
 	
 
@@ -54,6 +74,7 @@ public class StructurePieceCrater extends ScatteredStructurePiece {
        tagCompound.putInt("Radius", radius);
        tagCompound.putInt("xCenter", xCenter);
        tagCompound.putInt("zCenter", zCenter);
+       tagCompound.putInt("CraterType", craterType.ordinal());
     }
 
 	public boolean func_230383_a_(ISeedReader world, StructureManager structureMgr, ChunkGenerator chunkGen, Random rand, MutableBoundingBox bb, ChunkPos chunkPos, BlockPos blockPos)
@@ -63,19 +84,30 @@ public class StructurePieceCrater extends ScatteredStructurePiece {
 
 		List<BlockState> ores = props.craterOres.stream()
 				.map(s-> Block.getBlockFromItem(s.getItem()).getDefaultState())
+				.filter(state -> state.getBlock() != Blocks.AIR)
 				.collect(Collectors.toList());
 
-		//Random coefficients for the sin functions
-		int[] sinCoefficients = {rand.nextInt(10) + 1, rand.nextInt(10) + 1, rand.nextInt(10) + 1, rand.nextInt(10) + 1, rand.nextInt(10) + 1};
-		//Radius determination, with heavy weight towards smaller craters
-		int baseRadius = getBaseRadius(rand.nextInt(500), rand);
+		// Shape parameters must be identical in every chunk touched by the
+		// structure. The Random passed to this method is chunk-local.
+		Random shapeRandom = new Random(getShapeSeed());
+		int coefficientBound = craterType == CraterType.SMALL ? 15 : 10;
+		int[] sinCoefficients = {
+				shapeRandom.nextInt(coefficientBound) + 1,
+				shapeRandom.nextInt(coefficientBound) + 1,
+				shapeRandom.nextInt(coefficientBound) + 1,
+				shapeRandom.nextInt(coefficientBound) + 1,
+				shapeRandom.nextInt(coefficientBound) + 1
+		};
+		int baseRadius = radius;
 		boolean large = baseRadius > 32;
-		//Perturbation # calculation
-		int numBulges = rand.nextInt(large ? 5 : 4) + 1;
+		int numBulges = craterType == CraterType.SMALL ? 3 : shapeRandom.nextInt(large ? 5 : 4) + 1;
+		boolean centerSpire = craterType == CraterType.HUGE && shapeRandom.nextInt(4) == 0;
 
 		//Turn the coordinates from chunk stuff into their actual values
 		int xCoord = chunkPos.x << 4;
 		int zCoord = chunkPos.z << 4;
+		int centerX = (this.boundingBox.minX + this.boundingBox.maxX) / 2;
+		int centerZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2;
 
 		//Set up fluid fill, if needed
 		BlockState fillBlock = Blocks.AIR.getDefaultState();
@@ -105,30 +137,40 @@ public class StructurePieceCrater extends ScatteredStructurePiece {
 
 					int x = relx + xCoord;
 					int z = relz + zCoord;
+					int relativeX = x - centerX;
+					int relativeZ = z - centerZ;
 
 					if (y <= fluidMaxY && fillBlock.getBlock() != Blocks.AIR && getBlockStateFromPos(world.getWorld(), x, y, z, bb).getBlock() == Blocks.AIR) {
 						this.setBlockState(world, fillBlock, x, y, z, bb);
 					}
 					if (!isCraterIgnoredBlock(getBlockStateFromPos(world.getWorld(), x, y, z, bb).getBlock())) {
 						//Get us some funky radii up in here
-						int radius = getRadius(baseRadius, x, z, numBulges, sinCoefficients);
+						int radius = getRadius(baseRadius, relativeX, relativeZ, numBulges, sinCoefficients);
 
 						//Standard inverseHalfRadius stuff
-						int distancesSquared = (x) * (x) + (z) * (z);
+						int distancesSquared = relativeX * relativeX + relativeZ * relativeZ;
 						int blockRadius = (int)Math.sqrt(distancesSquared);
-						int inversePartialSquareRadius = (radius*radius - distancesSquared) / (radius * 2);
+						double depthDivisor = craterType == CraterType.HUGE
+								? baseRadius * (baseRadius > 256 ? 4D : baseRadius > 128 ? 3D : 2.25D)
+								: radius * 2D;
+						int inversePartialSquareRadius = (int)((radius * radius - distancesSquared) / depthDivisor);
 						int inverseRadius = radius - blockRadius;
 
 						//Places filler blocks to excavate the crater
 						for (int dist = 0; dist < inversePartialSquareRadius; dist++) {
 							if (y - dist > 2) {
-								this.setBlockState(world, (y-dist <= fluidMaxY) ? fillBlock : Blocks.AIR.getDefaultState(), x, y-dist, z, bb);
+								int maximumDepth = craterType == CraterType.HUGE ? 27 : large ? 16 : 12;
+								int targetY = y - Math.min(maximumDepth, dist);
+								this.setBlockState(world, (targetY <= fluidMaxY) ? fillBlock : Blocks.AIR.getDefaultState(), x, targetY, z, bb);
 							}
 						}
 
 						//Places blocks to form the ridges
 						double ridgeSize = Math.max(1, (12 * (radius)/64.0));
-						if (inverseRadius <= radius/4 && inverseRadius > -2 * radius) {
+						double outerRidgeLimit = craterType == CraterType.HUGE ? -3D * radius
+								: craterType == CraterType.SMALL ? -1.125D * radius
+								: -2D * radius;
+						if (inverseRadius <= radius/4 && inverseRadius > outerRidgeLimit) {
 							//The graph of this function and the old one can be found here https://www.desmos.com/calculator/x02rgy2wlf
 							for (int dist = -1; dist < 9 * ridgeSize * ((1 - inverseRadius)/(0.8 * radius + (inverseRadius - 1) * (inverseRadius - 1))) - 1.06; dist++) {
 								//Place the bank thrown up by the impact, and have some of the farthest be dispersed
@@ -153,8 +195,17 @@ public class StructurePieceCrater extends ScatteredStructurePiece {
 						//Places blocks to form the surface of the bowl
 						if (inversePartialSquareRadius >= 0 && (y - inversePartialSquareRadius > 0)) {
 							//Two blocks to remove weird stone
-							this.setBlockState(world, this.getBlockToPlace(world.getWorld(), x, z, ores, rand), x, y - Math.min(large ? 16 : 12, inversePartialSquareRadius), z, bb);
-							this.setBlockState(world, this.getBlockToPlace(world.getWorld(), x, z, ores, rand), x, y - 1 - Math.min(large ? 16 : 12, inversePartialSquareRadius), z, bb);
+							int maximumDepth = craterType == CraterType.HUGE ? 28 : large ? 16 : 12;
+							this.setBlockState(world, this.getBlockToPlace(world.getWorld(), x, z, ores, rand), x, y - Math.min(maximumDepth, inversePartialSquareRadius), z, bb);
+							this.setBlockState(world, this.getBlockToPlace(world.getWorld(), x, z, ores, rand), x, y - 1 - Math.min(maximumDepth, inversePartialSquareRadius), z, bb);
+						}
+
+						if(centerSpire && blockRadius < 0.25D * radius) {
+							int spireHeight = (int)Math.pow(Math.abs(-(radius / 16D) + blockRadius / 4D), 1.25D);
+							for(int dist = 0; dist < spireHeight; dist++) {
+								this.setBlockState(world, this.getBlockToPlaceRich(world.getWorld(), x, z, ores, rand),
+										x, y + Math.min(dist, 16) - 27, z, bb);
+							}
 						}
 
 						break;
@@ -184,14 +235,62 @@ public class StructurePieceCrater extends ScatteredStructurePiece {
 		}
 	}
 
-	//Random radius determination
-	private int getBaseRadius(int random, Random rand) {
+	private BlockState getBlockToPlaceRich(World world, int x, int z, List<BlockState> ores, Random rand) {
+		if(rand.nextInt(4) == 0 && !ores.isEmpty())
+			return ores.get(rand.nextInt(ores.size()));
+		return world.getBiome(new BlockPos(x, 64, z)).getGenerationSettings().getSurfaceBuilderConfig().getTop();
+	}
+
+	private static int chooseRadius(Random random, CraterType craterType, boolean airless) {
+		if(craterType == CraterType.SMALL)
+			return 4 + random.nextInt(4);
+		if(craterType == CraterType.HUGE)
+			return getHugeRadius(random.nextInt(400), random);
+		return getNormalRadius(random.nextInt(500), random, airless);
+	}
+
+	private static int getNormalRadius(int randomValue, Random random, boolean largeCraters) {
 		int radius = 8;
-		if (random < 440)
-			radius += rand.nextInt(16);
-		else if (random < 485)
-			radius += 24 + rand.nextInt(16);
+		if (randomValue < 440)
+			radius += random.nextInt(16);
+		else if (randomValue < 485)
+			radius += 24 + random.nextInt(16);
+		else if (largeCraters && randomValue < 495)
+			radius += 40 + random.nextInt(16);
+		else if (largeCraters && randomValue < 499)
+			radius += 56 + random.nextInt(28);
 		return radius;
+	}
+
+	private static int getHugeRadius(int randomValue, Random random) {
+		int radius = 84;
+		if(randomValue < 200)
+			radius += random.nextInt(75);
+		else if(randomValue < 325)
+			radius += 24 + random.nextInt(75);
+		else if(randomValue < 375)
+			radius += 40 + random.nextInt(75);
+		else
+			radius += 56 + random.nextInt(75);
+		return radius;
+	}
+
+	private static int getStructureDiameter(CraterType craterType) {
+		switch(craterType) {
+			case SMALL:
+				return 64;
+			case HUGE:
+				return 1664;
+			default:
+				return 288;
+		}
+	}
+
+	private long getShapeSeed() {
+		return ((long)xCenter * 341873128712L)
+				^ ((long)zCenter * 132897987541L)
+				^ ((long)radius * 42317861L)
+				^ craterType.ordinal();
 	}
 
 	//Very fun function for fancy radius

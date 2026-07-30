@@ -1,3 +1,6 @@
 {
-    "parent": "advancedrocketry:block/lens"
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "advancedrocketry:blocks/lens"
+  }
 }

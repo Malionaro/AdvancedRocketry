@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/oxygenscrubber_on" },
         "facing=south,state=true": { "model": "advancedrocketry:block/oxygenscrubber_on", "y": 180 },
         "facing=west,state=true":  { "model": "advancedrocketry:block/oxygenscrubber_on", "y": 270 },
-        "facing=east,state=true":  { "model": "advancedrocketry:block/oxygenscrubber_on", "y": 90 },
-        "inventory" : { "model": "advancedrocketry:block/oxygenscrubber" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/oxygenscrubber_on", "y": 90 }
     }
 }

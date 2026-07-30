@@ -1,0 +1,20 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+		" x ",
+		" m ",
+		" x "
+    ],
+    "key": {
+        "x": {
+            "item": "libvulpes:batterypack"
+        },
+        "m": {
+            "item": "libvulpes:machinestructure"
+		}
+    },
+    "result": {
+        "item": "libvulpes:forge_power_input",
+        "count": 1
+    }
+}

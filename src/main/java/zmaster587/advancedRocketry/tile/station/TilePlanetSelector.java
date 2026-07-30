@@ -24,6 +24,7 @@ import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
 import zmaster587.advancedRocketry.inventory.modules.ModulePlanetSelector;
 import zmaster587.advancedRocketry.util.ITilePlanetSystemSelectable;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.libVulpes.api.LibvulpesGuiRegistry;
 import zmaster587.libVulpes.inventory.ContainerModular;
 import zmaster587.libVulpes.inventory.GuiHandler;
@@ -200,9 +201,18 @@ public class TilePlanetSelector extends TilePointer implements ISelectionNotify,
 
 	public void readAdditionalNBT(CompoundNBT nbt) {
 		if(container != null) {
-			ListNBT intArray = nbt.getList("visiblePlanets", NBT.TAG_STRING);
-			for(int i = 0; i <  intArray.size(); i++)
-				container.setPlanetAsKnown(new ResourceLocation(intArray.getString(i)));
+			if(nbt.contains("visiblePlanets", NBT.TAG_LIST)) {
+				ListNBT planetList = nbt.getList("visiblePlanets", NBT.TAG_STRING);
+				for(int i = 0; i < planetList.size(); i++) {
+					ResourceLocation planetId = ResourceLocation.tryCreate(planetList.getString(i));
+					if(planetId != null)
+						container.setPlanetAsKnown(planetId);
+				}
+			}
+			else if(nbt.contains("visiblePlanets", NBT.TAG_INT_ARRAY)) {
+				for(int planetId : nbt.getIntArray("visiblePlanets"))
+					container.setPlanetAsKnown(LegacyDimensionIdMigration.fromLegacyId(planetId));
+			}
 		}
 	}
 

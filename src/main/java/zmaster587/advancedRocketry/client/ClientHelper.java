@@ -3,6 +3,8 @@ package zmaster587.advancedRocketry.client;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IDayTimeReader;
@@ -11,11 +13,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import zmaster587.advancedRocketry.AdvancedRocketry;
 import zmaster587.advancedRocketry.api.ARConfiguration;
+import zmaster587.advancedRocketry.api.AdvancedRocketryItems;
+import zmaster587.advancedRocketry.api.Constants;
 import zmaster587.advancedRocketry.client.render.planet.ISkyRenderer;
 import zmaster587.advancedRocketry.client.render.planet.RenderPlanetarySky;
 import zmaster587.advancedRocketry.client.render.planet.RenderSpaceSky;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
+import zmaster587.advancedRocketry.util.AstronomicalBodyHelper;
+import zmaster587.libVulpes.api.IModularArmor;
 import zmaster587.libVulpes.util.ZUtils;
 
 public class ClientHelper {
@@ -64,6 +70,50 @@ public class ClientHelper {
 		double d0 = MathHelper.frac((double)reader.func_241851_ab() / ((double)properties.rotationalPeriod) - 0.25D);
 		double d1 = 0.5D - Math.cos(d0 * Math.PI) / 2.0D;
 		return (float)(d0 * 2.0D + d1) / 3.0F;
+	}
+
+	/**
+	 * Restores the 1.12 planetary light attenuation that was lost when
+	 * WorldProviderPlanet disappeared. The Earthbright visor intentionally
+	 * bypasses only this distance/luminosity multiplier, preserving day/night,
+	 * weather and every other vanilla light-map contribution.
+	 */
+	@OnlyIn(Dist.CLIENT)
+	public static float adjustSunBrightness(float originalBrightness) {
+		Minecraft minecraft = Minecraft.getInstance();
+		World world = minecraft.world;
+		if(world == null || minecraft.player == null)
+			return originalBrightness;
+
+		DimensionProperties properties = DimensionManager.getInstance()
+				.getDimensionProperties(ZUtils.getDimensionIdentifier(world));
+		if(properties == null || properties.isStation()
+				|| !Constants.PLANET_NAMESPACE.equals(properties.getId().getNamespace())
+				|| properties.getStar() == null)
+			return originalBrightness;
+
+		if(hasEarthbrightVisor(minecraft.player.getItemStackFromSlot(EquipmentSlotType.HEAD)))
+			return originalBrightness;
+
+		double stellarBrightness = AstronomicalBodyHelper.getStellarBrightness(
+				properties.getStar(), properties.getSolarOrbitalDistance());
+		double perceivedBrightness = AstronomicalBodyHelper.getPlanetaryLightLevelMultiplier(stellarBrightness);
+		if(!Double.isFinite(perceivedBrightness) || perceivedBrightness < 0)
+			return originalBrightness;
+
+		return (float)(originalBrightness * perceivedBrightness);
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	private static boolean hasEarthbrightVisor(ItemStack helmet) {
+		if(helmet.isEmpty() || !(helmet.getItem() instanceof IModularArmor))
+			return false;
+
+		for(ItemStack module : ((IModularArmor)helmet.getItem()).getComponents(helmet)) {
+			if(!module.isEmpty() && module.getItem() == AdvancedRocketryItems.itemEarthbrightVisorUpgrade)
+				return true;
+		}
+		return false;
 	}
 
 	/* gravRotation

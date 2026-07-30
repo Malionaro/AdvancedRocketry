@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+	    " cp",
+		"rrp",
+		" cp"
+    ],
+    "key": {
+        "c": {
+            "tag": "forge:coils/gold"
+        },
+        "p": {
+            "tag": "forge:plates/steel"
+		},
+        "r": {
+            "tag": "forge:rods/steel"
+		}
+    },
+    "result": {
+        "item": "libvulpes:advanced_motor",
+        "count": 1
+    }
+}

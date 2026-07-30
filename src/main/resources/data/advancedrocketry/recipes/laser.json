@@ -1,13 +1,13 @@
 {
     "type": "minecraft:crafting_shaped",
     "pattern": [
-		" c ",
-		"pdp",
+		" l ",
+		"pcp",
 		"psp"
     ],
     "key": {
-        "c": {
-            "tag": "forge:coils/copper"
+        "l": {
+            "item": "advancedrocketry:blocklens"
         },
 		"s": {
             "item": "libvulpes:machinestructure"
@@ -15,8 +15,8 @@
 		"p": {
             "tag": "forge:plates/aluminum"
         },
-		"d": {
-          "item": "advancedrocketry:crystal_red"
+		"c": {
+            "item": "advancedrocketry:crystal_red"
         }
     },
     "result": {

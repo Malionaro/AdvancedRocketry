@@ -21,6 +21,9 @@ output
 # other
 eclipse
 run
+/run-smoke-recipes/
+/run-nbt-fixtures/
+/graphify-out/
 refresh.bat
 AdvancedRocketry.txt
 changelog.html

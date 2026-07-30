@@ -7,14 +7,14 @@
     ],
     "key": {
 	    "t": {
-	        "item": "advancedrocketry:steelpressuretank"
+	        "item": "advancedrocketry:titaniumpressuretank"
         },
 	    "g": {
-            "tag": "forge:glass_panes"
+            "tag": "forge:glass_panes/colorless"
         }
     },
     "result": {
-        "item": "advancedrocketry:pressuretank",
+        "item": "advancedrocketry:liquidtank",
         "count": 1
     }
 }

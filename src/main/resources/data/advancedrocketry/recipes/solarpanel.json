@@ -1,19 +1,22 @@
 {
     "type": "minecraft:crafting_shaped",
     "pattern": [
-        "xxx",
-        "yyy",
-        "zzz"
+        "rrr",
+        "gbg",
+        "ppp"
     ],
     "key": {
-        "x": {
+        "r": {
             "tag": "forge:dusts/redstone"
         },
-        "y": {
+        "g": {
             "tag": "forge:dusts/glowstone"
         },
-		"z": {
+        "p": {
             "tag": "forge:plates/gold"
+        },
+        "b": {
+            "item": "libvulpes:machinestructure"
         }
     },
     "result": {

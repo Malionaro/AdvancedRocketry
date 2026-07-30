@@ -136,7 +136,7 @@ public final class SealableBlockHandler implements IAtmosphereSealHandler
 			if (!blockAllowList.contains(block)) {
 				blockAllowList.add(block);
 			}
-			blockAllowList.remove(block);
+			blockBanList.remove(block);
 		}
 	}
 	

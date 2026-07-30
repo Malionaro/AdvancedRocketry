@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/oxygenvent" },
         "facing=south,state=true": { "model": "advancedrocketry:block/oxygenvent", "y": 180 },
         "facing=west,state=true":  { "model": "advancedrocketry:block/oxygenvent", "y": 270 },
-        "facing=east,state=true":  { "model": "advancedrocketry:block/oxygenvent", "y": 90 },
-        "inventory" : { "model": "advancedrocketry:block/oxygenvent" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/oxygenvent", "y": 90 }
     }
 }

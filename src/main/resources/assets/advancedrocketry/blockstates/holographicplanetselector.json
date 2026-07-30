@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/holographicplanetselector" },
         "facing=south,state=true": { "model": "advancedrocketry:block/holographicplanetselector", "y": 180 },
         "facing=west,state=true":  { "model": "advancedrocketry:block/holographicplanetselector", "y": 270 },
-        "facing=east,state=true":  { "model": "advancedrocketry:block/holographicplanetselector", "y": 90 },
-        "inventory" : { "model": "advancedrocketry:block/holographicplanetselector" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/holographicplanetselector", "y": 90 }
     }
 }

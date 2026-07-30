@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "x",
+        "y"
+    ],
+    "key": {
+        "x": {
+            "item": "minecraft:chest"
+        },
+        "y": {
+            "item": "libvulpes:machinestructure"
+	    }
+    },
+    "result": {
+        "item": "libvulpes:itemihatch",
+        "count": 1
+    }
+}

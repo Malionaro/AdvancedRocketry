@@ -32,6 +32,7 @@ import zmaster587.advancedRocketry.api.stations.ISpaceObject;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.inventory.modules.ModuleStellarBackground;
 import zmaster587.advancedRocketry.stations.SpaceObjectManager;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.libVulpes.LibVulpes;
 import zmaster587.libVulpes.api.LibvulpesGuiRegistry;
 import zmaster587.libVulpes.inventory.ContainerModular;
@@ -328,8 +329,15 @@ public class ItemStationChip extends ItemIdWithName implements IModularInventory
 	}
 
 	public static ResourceLocation getUUID(ItemStack stack) {
-		if(stack.hasTag())
-			return new ResourceLocation(Constants.modId, stack.getTag().getString(uuidIdentifier).split(":")[1]);
+		if(stack.hasTag()) {
+			CompoundNBT nbt = stack.getTag();
+			if(nbt.contains(uuidIdentifier, NBT.TAG_STRING)) {
+				ResourceLocation stationId = ResourceLocation.tryCreate(nbt.getString(uuidIdentifier));
+				return stationId == null ? Constants.INVALID_PLANET : stationId;
+			}
+			if(nbt.contains(uuidIdentifier, NBT.TAG_ANY_NUMERIC))
+				return LegacyDimensionIdMigration.fromLegacyStationId(nbt.getInt(uuidIdentifier));
+		}
 		return Constants.INVALID_PLANET;
 	}
 

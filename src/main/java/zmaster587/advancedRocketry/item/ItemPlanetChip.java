@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 import zmaster587.advancedRocketry.api.Constants;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.libVulpes.LibVulpes;
 
 import javax.annotation.Nonnull;
@@ -36,10 +37,8 @@ public class ItemPlanetChip extends ItemIdWithName {
 	 * @return the DimensionProperties of the dimId stored on the item or null if invalid
 	 */
 	public DimensionProperties getDimension(ItemStack stack) {
-		if(stack.hasTag()) {
-			return DimensionManager.getInstance().getDimensionProperties( new ResourceLocation( stack.getTag().getString(dimensionIdIdentifier)));
-		}
-		return null;
+		ResourceLocation dimensionId = getStoredDimensionId(stack);
+		return dimensionId == null ? null : DimensionManager.getInstance().getDimensionProperties(dimensionId);
 	}
 
 	/**
@@ -48,12 +47,8 @@ public class ItemPlanetChip extends ItemIdWithName {
 	 */
 	public boolean hasValidDimension(@Nonnull ItemStack stack) {
 
-		if(stack.hasTag()) {
-			ResourceLocation dimId = new ResourceLocation(stack.getTag().getString(dimensionIdIdentifier));
-			return DimensionManager.getInstance().isDimensionCreated(dimId);
-		}
-
-		return false;
+		ResourceLocation dimensionId = getStoredDimensionId(stack);
+		return dimensionId != null && DimensionManager.getInstance().isDimensionCreated(dimensionId);
 	}
 
 	/**
@@ -75,6 +70,7 @@ public class ItemPlanetChip extends ItemIdWithName {
 		if(Constants.INVALID_PLANET.equals(dimensionId)) {
 			nbt = new CompoundNBT();
 			nbt.putString(dimensionIdIdentifier, dimensionId.toString());
+			stack.setTag(nbt);
 			return;
 		}
 
@@ -99,9 +95,8 @@ public class ItemPlanetChip extends ItemIdWithName {
 	 * @return id of the dimension stored or Constants.INVALID_PLANET if invalid
 	 */
 	public ResourceLocation getDimensionId(ItemStack stack) {
-		if(stack.hasTag())
-			return new ResourceLocation(stack.getTag().getString(dimensionIdIdentifier));
-		return Constants.INVALID_PLANET;
+		ResourceLocation dimensionId = getStoredDimensionId(stack);
+		return dimensionId == null ? Constants.INVALID_PLANET : dimensionId;
 	}
 
 	/**
@@ -110,9 +105,14 @@ public class ItemPlanetChip extends ItemIdWithName {
 	 * @return DimensionProperties Object of the relevent dimension or null if invalid
 	 */
 	public DimensionProperties getDimensionProperties(ItemStack stack) {
-		if(stack.hasTag())
-			return DimensionManager.getInstance().getDimensionProperties(new ResourceLocation(stack.getTag().getString(dimensionIdIdentifier)));
-		return null;
+		ResourceLocation dimensionId = getStoredDimensionId(stack);
+		return dimensionId == null ? null : DimensionManager.getInstance().getDimensionProperties(dimensionId);
+	}
+
+	private ResourceLocation getStoredDimensionId(ItemStack stack) {
+		if(!stack.hasTag())
+			return null;
+		return LegacyDimensionIdMigration.read(stack.getTag(), dimensionIdIdentifier);
 	}
 
 	public Long getUUID(ItemStack stack) {

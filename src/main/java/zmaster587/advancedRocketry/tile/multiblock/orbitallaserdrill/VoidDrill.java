@@ -1,20 +1,13 @@
 package zmaster587.advancedRocketry.tile.multiblock.orbitallaserdrill;
 
 import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraftforge.registries.ForgeRegistries;
-import zmaster587.advancedRocketry.AdvancedRocketry;
 import zmaster587.advancedRocketry.api.ARConfiguration;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -35,7 +28,12 @@ class VoidDrill extends AbstractDrill {
 	}
 
 	private void loadGlobalOres() {
-		ores = ARConfiguration.getCurrentConfig().standardLaserDrillOres;
+		// Never retain or modify the configuration's mutable list. A drill adds
+		// dimension-specific entries when it starts, and those additions must
+		// remain local to this drill.
+		ores = ARConfiguration.getCurrentConfig().standardLaserDrillOres.stream()
+				.map(ItemStack::copy)
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	/**
@@ -45,7 +43,7 @@ class VoidDrill extends AbstractDrill {
 	 */
 	ItemStack[] performOperation() {
 		ArrayList<ItemStack> items = new ArrayList<>();
-		if (random.nextInt(10) == 0) {
+		if (!ores.isEmpty() && random.nextInt(10) == 0) {
 			ItemStack item = ores.get(random.nextInt(ores.size()));
 			ItemStack newStack = item.copy();
 			items.add(newStack);
@@ -63,7 +61,10 @@ class VoidDrill extends AbstractDrill {
 		// Ideally, this should be done in the constructor, but the world provider is null there for reasons unknown, so this gets delayed until first activation
 		if(!this.planetOresInitialized) {
 			DimensionProperties dimProperties = DimensionManager.getInstance().getDimensionProperties(world);
-			ores.addAll(dimProperties.laserDrillOres.stream().filter(s->!ores.contains(s)).collect(Collectors.toSet()));
+			dimProperties.laserDrillOres.stream()
+					.filter(stack -> !ores.contains(stack))
+					.map(ItemStack::copy)
+					.forEach(ores::add);
 			this.planetOresInitialized = true;
 		}
 		return true;

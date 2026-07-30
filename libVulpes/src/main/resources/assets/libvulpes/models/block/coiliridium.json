@@ -1,0 +1,7 @@
+{
+    "parent": "libvulpes:block/tintedcubecolumn",
+    "textures": {
+        "end": "libvulpes:blocks/coiliridiumtop",
+        "side": "libvulpes:blocks/coiliridiumside"
+    }
+}

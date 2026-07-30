@@ -28,6 +28,7 @@ import zmaster587.advancedRocketry.network.PacketSpaceStationInfo;
 import zmaster587.advancedRocketry.network.PacketStationUpdate;
 import zmaster587.advancedRocketry.network.PacketStationUpdate.Type;
 import zmaster587.advancedRocketry.tile.station.TileDockingPort;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.advancedRocketry.util.SpacePosition;
 import zmaster587.advancedRocketry.util.StationLandingLocation;
 import zmaster587.libVulpes.block.BlockFullyRotatable;
@@ -830,7 +831,9 @@ public class SpaceStationObject implements ISpaceObject, IPlanetDefiner {
 	public void readFromNbt(CompoundNBT nbt) {
 		properties.readFromNBT(nbt);
 
-		destinationDimId = new ResourceLocation(nbt.getString("destinationDimId"));
+		ResourceLocation loadedDestination = LegacyDimensionIdMigration.read(nbt, "destinationDimId");
+		if(loadedDestination != null)
+			destinationDimId = loadedDestination;
 		isAnchored = nbt.getBoolean("isAnchored");
 		launchPosX = nbt.getInt("launchposX");
 		launchPosZ = nbt.getInt("launchposY");
@@ -846,7 +849,12 @@ public class SpaceStationObject implements ISpaceObject, IPlanetDefiner {
 		targetRotationsPerHour[2] = nbt.getInt("targetRotationZ");
 		targetGravity = nbt.getInt("targetGravity");
 		spawnLocation = new HashedBlockPosition(nbt.getInt("spawnX"), nbt.getInt("spawnY"), nbt.getInt("spawnZ"));
-		properties.setId(new ResourceLocation(nbt.getString("id")));
+		ResourceLocation stationId = nbt.contains("id", NBT.TAG_STRING)
+				? ResourceLocation.tryCreate(nbt.getString("id"))
+				: nbt.contains("id", NBT.TAG_ANY_NUMERIC)
+					? LegacyDimensionIdMigration.fromLegacyStationId(nbt.getInt("id")) : null;
+		if(stationId != null)
+			properties.setId(stationId);
 		rotation[0] = nbt.getDouble("rotationX");
 		rotation[1] = nbt.getDouble("rotationY");
 		rotation[2] = nbt.getDouble("rotationZ");
@@ -856,9 +864,19 @@ public class SpaceStationObject implements ISpaceObject, IPlanetDefiner {
 
 		//get known planets
 
-		ListNBT planetList = nbt.getList("knownPlanets", NBT.TAG_STRING);
-		for( int i =0; i < planetList.size(); i++)
-			knownPlanetList.add( new ResourceLocation(planetList.getString(i)));
+		knownPlanetList.clear();
+		if(nbt.contains("knownPlanets", NBT.TAG_LIST)) {
+			ListNBT planetList = nbt.getList("knownPlanets", NBT.TAG_STRING);
+			for(int i = 0; i < planetList.size(); i++) {
+				ResourceLocation planetId = ResourceLocation.tryCreate(planetList.getString(i));
+				if(planetId != null)
+					knownPlanetList.add(planetId);
+			}
+		}
+		else if(nbt.contains("knownPlanets", NBT.TAG_INT_ARRAY)) {
+			for(int planetId : nbt.getIntArray("knownPlanets"))
+				knownPlanetList.add(LegacyDimensionIdMigration.fromLegacyId(planetId));
+		}
 
 		if(nbt.contains("direction"))
 			direction = Direction.values()[nbt.getInt("direction")];

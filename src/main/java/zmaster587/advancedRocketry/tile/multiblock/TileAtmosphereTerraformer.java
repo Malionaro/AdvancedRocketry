@@ -25,6 +25,8 @@ import zmaster587.advancedRocketry.api.*;
 import zmaster587.advancedRocketry.api.satellite.SatelliteBase;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
+import zmaster587.advancedRocketry.item.ItemBiomeChanger;
+import zmaster587.advancedRocketry.satellite.SatelliteBiomeChanger;
 import zmaster587.advancedRocketry.util.AudioRegistry;
 import zmaster587.libVulpes.LibVulpes;
 import zmaster587.libVulpes.api.LibVulpesBlocks;
@@ -46,11 +48,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
+public class TileAtmosphereTerraformer extends TileMultiPowerConsumer implements IInventory {
 
 	private ModuleToggleSwitch buttonIncrease, buttonDecrease;
 	private ModuleRadioButton radioButton;
 	private ModuleText text;
+	private EmbeddedInventory inv;
 	private boolean outOfFluid;
 
 	private static final Object[][][] structure = new Object[][][]{                                                                                                                                                                                                                                                                                                        
@@ -283,6 +286,7 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 		buttons.add(buttonIncrease);
 		buttons.add(buttonDecrease);
 		radioButton = new ModuleRadioButton(this, buttons);
+		inv = new EmbeddedInventory(1);
 		outOfFluid = false;
 	}
 
@@ -305,6 +309,7 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 		
 		setText();
 
+		modules.add(new ModuleLimitedSlotArray(150, 114, this, 0, 1));
 		int i = 0;
 		modules.add(new ModuleText(180, 10, "Gas Status", 0x282828));
 		for(IFluidHandler tile : fluidInPorts) {
@@ -320,6 +325,8 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 		String statusText;
 		if(isRunning())
 			statusText = LibVulpes.proxy.getLocalizedString("msg.terraformer.running");
+		else if(!hasValidBiomeChanger())
+			statusText = LibVulpes.proxy.getLocalizedString("msg.terraformer.missingbiome");
 		else if(outOfFluid)
 			statusText = LibVulpes.proxy.getLocalizedString("msg.terraformer.outofgas");
 		else
@@ -370,6 +377,9 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 			}
 		}
 
+		if(!ARConfiguration.getCurrentConfig().terraformRequiresFluid.get())
+			return;
+
 		if(!world.isRemote) {
 			int requiredN2 = ARConfiguration.getCurrentConfig().terraformliquidRate.get(), requiredO2 =  ARConfiguration.getCurrentConfig().terraformliquidRate.get();
 
@@ -391,6 +401,10 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 					this.setMachineEnabled(false);
 					markDirty();
 				}
+				else if(!hasValidBiomeChanger()) {
+					this.setMachineEnabled(false);
+					markDirty();
+				}
 			}
 		}
 	}
@@ -402,6 +416,17 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 	@Override
 	public int getSoundDuration() {
 		return 80;
+	}
+
+	private boolean hasValidBiomeChanger() {
+		ItemStack biomeChanger = inv.getStackInSlot(0);
+		if(biomeChanger.isEmpty() || !(biomeChanger.getItem() instanceof ItemBiomeChanger))
+			return false;
+
+		SatelliteBase satellite = ((ItemBiomeChanger)biomeChanger.getItem()).getSatellite(biomeChanger);
+		return satellite instanceof SatelliteBiomeChanger
+				&& satellite.getDimensionId().isPresent()
+				&& satellite.getDimensionId().get().equals(ZUtils.getDimensionIdentifier(world));
 	}
 
 	@Override
@@ -441,8 +466,9 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 		completionTime = getCompletionTime();
 
 		DimensionProperties properties = DimensionManager.getInstance().getDimensionProperties(ZUtils.getDimensionIdentifier(world));
-		if( !world.isRemote && properties != null && properties.getId() == ZUtils.getDimensionIdentifier(world) && (properties.isNativeDimension && 
-				!properties.isAsteroid()) || ARConfiguration.getCurrentConfig().allowTerraformNonAR.get()) {
+		if(!world.isRemote && properties != null && properties.getId().equals(ZUtils.getDimensionIdentifier(world))
+				&& ((properties.isNativeDimension && !properties.isAsteroid())
+				|| ARConfiguration.getCurrentConfig().allowTerraformNonAR.get())) {
 			if(buttonIncrease.getState() && properties.getAtmosphereDensity() < 1600)
 				properties.setAtmosphereDensity(properties.getAtmosphereDensity()+1);
 			else if(buttonDecrease.getState() && properties.getAtmosphereDensity() > 0) {
@@ -490,8 +516,12 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 
 	@Override
 	public void onInventoryButtonPressed(ModuleButton buttonId) {
-		super.onInventoryButtonPressed(buttonId);
+		if(!hasValidBiomeChanger()) {
+			setText();
+			return;
+		}
 
+		super.onInventoryButtonPressed(buttonId);
 		int button = (int) buttonId.getAdditionalData();
 
 		outOfFluid = false;
@@ -506,6 +536,7 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 		super.write(nbt);
 
 		nbt.putInt("selected", radioButton.getOptionSelected());
+		inv.write(nbt);
 		nbt.putBoolean("oofluid", outOfFluid);
 		
 		return nbt;
@@ -517,6 +548,7 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 		super.read(state, nbt);
 
 		radioButton.setOptionSelected(nbt.getInt("selected"));
+		inv.readFromNBT(nbt);
 		outOfFluid = nbt.getBoolean("oofluid");
 		
 	}
@@ -524,6 +556,81 @@ public class TileAtmosphereTerraformer extends TileMultiPowerConsumer {
 	@Override
 	public String getMachineName() {
 		return "block.advancedrocketry.terraformer";
+	}
+
+	@Override
+	public int getSizeInventory() {
+		return inv.getSizeInventory();
+	}
+
+	@Override
+	@Nonnull
+	public ItemStack getStackInSlot(int index) {
+		return inv.getStackInSlot(index);
+	}
+
+	@Override
+	@Nonnull
+	public ItemStack decrStackSize(int index, int count) {
+		ItemStack stack = inv.decrStackSize(index, count);
+		markDirty();
+		return stack;
+	}
+
+	@Override
+	@Nonnull
+	public ItemStack removeStackFromSlot(int index) {
+		ItemStack stack = inv.removeStackFromSlot(index);
+		markDirty();
+		if(world != null && world.isRemote)
+			setText();
+		return stack;
+	}
+
+	@Override
+	public void setInventorySlotContents(int index, @Nonnull ItemStack stack) {
+		inv.setInventorySlotContents(index, stack);
+		markDirty();
+		if(world != null && world.isRemote)
+			setText();
+	}
+
+	@Override
+	public int getInventoryStackLimit() {
+		return 1;
+	}
+
+	@Override
+	@ParametersAreNonnullByDefault
+	public boolean isUsableByPlayer(PlayerEntity player) {
+		return world != null && world.getTileEntity(pos) == this
+				&& player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return inv.isEmpty();
+	}
+
+	@Override
+	@ParametersAreNonnullByDefault
+	public void openInventory(PlayerEntity player) {
+	}
+
+	@Override
+	@ParametersAreNonnullByDefault
+	public void closeInventory(PlayerEntity player) {
+	}
+
+	@Override
+	public boolean isItemValidForSlot(int index, @Nonnull ItemStack stack) {
+		return index == 0 && stack.getItem() instanceof ItemBiomeChanger;
+	}
+
+	@Override
+	public void clear() {
+		inv.setInventorySlotContents(0, ItemStack.EMPTY);
+		markDirty();
 	}
 
 }

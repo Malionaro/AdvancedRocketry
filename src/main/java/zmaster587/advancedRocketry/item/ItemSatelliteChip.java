@@ -13,6 +13,7 @@ import zmaster587.advancedRocketry.api.ISatelliteIdItem;
 import zmaster587.advancedRocketry.api.SatelliteRegistry;
 import zmaster587.advancedRocketry.api.satellite.SatelliteBase;
 import zmaster587.advancedRocketry.api.satellite.SatelliteProperties;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.libVulpes.LibVulpes;
 
 import javax.annotation.Nonnull;
@@ -56,13 +57,14 @@ public class ItemSatelliteChip extends Item implements ISatelliteIdItem {
 			SatelliteBase satellite = zmaster587.advancedRocketry.dimension.DimensionManager.getInstance().getSatellite(satId);
 
 			if(satellite != null) {
+				satellite.getDimensionId().ifPresent(dimensionId -> {
+					ResourceLocation storedDimension = getWorldId(stack);
+					if(Constants.INVALID_PLANET.equals(storedDimension))
+						nbt.putString("dimId", dimensionId.toString());
 
-				if(!nbt.contains("dimId") || Constants.INVALID_PLANET.equals(new ResourceLocation(nbt.getString("dimId")))) {
-					nbt.putString("dimId", satellite.getDimensionId().get().toString());
-				}
-
-				if( zmaster587.advancedRocketry.dimension.DimensionManager.getInstance().getDimensionProperties(satellite.getDimensionId().get()) != null)
-					nbt.putString(name, zmaster587.advancedRocketry.dimension.DimensionManager.getInstance().getDimensionProperties(satellite.getDimensionId().get()).getName());
+					if(zmaster587.advancedRocketry.dimension.DimensionManager.getInstance().getDimensionProperties(dimensionId) != null)
+						nbt.putString(name, zmaster587.advancedRocketry.dimension.DimensionManager.getInstance().getDimensionProperties(dimensionId).getName());
+				});
 			}
 
 
@@ -79,8 +81,9 @@ public class ItemSatelliteChip extends Item implements ISatelliteIdItem {
 			nbt = new CompoundNBT();
 
 		nbt.putString("satelliteName", satellite.getName());
-		nbt.putString("dimId", satellite.getDimensionId().toString());
+		satellite.getDimensionId().ifPresent(dimensionId -> nbt.putString("dimId", dimensionId.toString()));
 		nbt.putLong("satelliteId", satellite.getId());
+		stack.setTag(nbt);
 	}
 
 	/**
@@ -117,7 +120,7 @@ public class ItemSatelliteChip extends Item implements ISatelliteIdItem {
 		else 
 			return;
 
-		nbt.putInt("dimId", dimId);
+		nbt.putString("dimId", LegacyDimensionIdMigration.fromLegacyId(dimId).toString());
 	}
 
 	public String getSatelliteName(@Nonnull ItemStack stack) {
@@ -133,9 +136,8 @@ public class ItemSatelliteChip extends Item implements ISatelliteIdItem {
 		CompoundNBT nbt;
 
 		if(stack.hasTag() && (nbt = stack.getTag()).contains("dimId") ) {
-
-
-			return new ResourceLocation( nbt.getString("dimId"));
+			ResourceLocation dimensionId = LegacyDimensionIdMigration.read(nbt, "dimId");
+			return dimensionId == null ? Constants.INVALID_PLANET : dimensionId;
 		}
 		return Constants.INVALID_PLANET; // Cant have a [strike]nether[/strike] satellite anyway...ofc you can
 	}

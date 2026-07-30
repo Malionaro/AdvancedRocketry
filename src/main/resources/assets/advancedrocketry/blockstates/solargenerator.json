@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/solarpanel"},
         "facing=south,state=true": { "model": "advancedrocketry:block/solarpanel"},
         "facing=west,state=true":  { "model": "advancedrocketry:block/solarpanel"},
-        "facing=east,state=true":  { "model": "advancedrocketry:block/solarpanel"},
-        "inventory" : { "model": "advancedrocketry:block/solarpanel" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/solarpanel"}
     }
 }

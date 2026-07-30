@@ -6,7 +6,8 @@
 	    "f f"
     ],
     "key": {
-	    "c": {"item": "advancedrocketry:titaniumpressuretank"
+	    "c": {
+            "tag": "advancedrocketry:pressure_tanks"
         },
 	    "l": {
 	        "item": "minecraft:lever"

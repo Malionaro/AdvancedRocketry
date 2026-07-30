@@ -1,0 +1,12 @@
+{
+  "multipart": [
+    { "when": { "variant": "0|8" },  "apply": { "model": "advancedrocketry:block/databus" } },
+    { "when": { "variant": "1|9" },  "apply": { "model": "advancedrocketry:block/satellitebay" } },
+    { "when": { "variant": "2|10" }, "apply": { "model": "libvulpes:block/outputhatch" } },
+    { "when": { "variant": "3|11" }, "apply": { "model": "libvulpes:block/inputhatch" } },
+    { "when": { "variant": "4|12" }, "apply": { "model": "libvulpes:block/fluidoutputhatch" } },
+    { "when": { "variant": "5|13" }, "apply": { "model": "libvulpes:block/fluidinputhatch" } },
+    { "when": { "variant": "6|14" }, "apply": { "model": "advancedrocketry:block/guidancecomputeraccesshatch" } },
+    { "when": { "variant": "7|15" }, "apply": { "model": "advancedrocketry:block/ar_empty" } }
+  ]
+}

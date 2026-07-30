@@ -10,8 +10,8 @@
 	  	  "tag": "minecraft:wool",
             "data": 32767
         },
-		"t": {
-	    	"tag": "forge:plates/steel"
+	    "t": {
+            "item": "advancedrocketry:monopropellantfueltank"
         },
 		"r": {
             "tag": "forge:rods/iron"

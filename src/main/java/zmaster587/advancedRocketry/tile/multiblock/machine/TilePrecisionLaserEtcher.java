@@ -93,7 +93,8 @@ public class TilePrecisionLaserEtcher extends TileMultiblockMachine implements I
 	}
 
 	private boolean isLensItem (ItemStack stack) {
-		return ItemTags.getCollection().getOwningTags(stack.getItem()).contains(new ResourceLocation("advancedrocketry:lensPrecisionLaserEtcher"));
+		return ItemTags.getCollection().getOwningTags(stack.getItem())
+				.contains(new ResourceLocation("forge", "lenses/precision_laser_etcher"));
 	}
 	@Override
 	public SoundEvent getSound() {

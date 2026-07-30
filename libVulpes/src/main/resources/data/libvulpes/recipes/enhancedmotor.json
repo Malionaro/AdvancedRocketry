@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+		" cp",
+		"rrp",
+		" cp"
+    ],
+    "key": {
+        "c": {
+            "tag": "forge:coils/aluminum"
+        },
+        "p": {
+            "tag": "forge:plates/titanium"
+		},
+        "r": {
+            "tag": "forge:rods/titanium"
+		}
+    },
+    "result": {
+        "item": "libvulpes:enhanced_motor",
+        "count": 1
+    }
+}

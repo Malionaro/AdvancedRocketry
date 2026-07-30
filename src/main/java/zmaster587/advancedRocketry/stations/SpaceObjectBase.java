@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
@@ -14,6 +15,7 @@ import zmaster587.advancedRocketry.api.stations.IStorageChunk;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
 import zmaster587.advancedRocketry.network.PacketStationUpdate;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.libVulpes.network.PacketHandler;
 import zmaster587.libVulpes.util.HashedBlockPosition;
 import zmaster587.libVulpes.util.ZUtils;
@@ -269,7 +271,12 @@ public abstract class SpaceObjectBase implements ISpaceObject {
 		posY = nbt.getInt("posY");
 		altitude = nbt.getInt("altitude");
 		spawnLocation = new HashedBlockPosition(nbt.getInt("spawnX"), nbt.getInt("spawnY"), nbt.getInt("spawnZ"));
-		properties.setId(new ResourceLocation(nbt.getString("id")));
+		ResourceLocation stationId = nbt.contains("id", NBT.TAG_STRING)
+				? ResourceLocation.tryCreate(nbt.getString("id"))
+				: nbt.contains("id", NBT.TAG_ANY_NUMERIC)
+					? LegacyDimensionIdMigration.fromLegacyStationId(nbt.getInt("id")) : null;
+		if(stationId != null)
+			properties.setId(stationId);
 		rotation[0] = nbt.getDouble("rotationX");
 		rotation[1] = nbt.getDouble("rotationY");
 		rotation[2] = nbt.getDouble("rotationZ");

@@ -1,0 +1,23 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+		" c ",
+		"prp",
+		"prp"
+    ],
+    "key": {
+        "c": {
+            "tag": "forge:rods/iron"
+        },
+		"p": {
+            "tag": "forge:plates/aluminum"
+        },
+		"r": {
+            "tag": "forge:dusts/redstone"
+        }
+    },
+    "result": {
+        "item": "libvulpes:battery",
+        "count": 4
+    }
+}

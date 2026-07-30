@@ -1,0 +1,24 @@
+{
+  "type": "advancedrocketry:precisionlaseretcher",
+  "itemingredients": [
+    {
+      "tag": "forge:lenses/precision_laser_etcher"
+    },
+    {
+      "tag": "forge:plates/gold"
+    },
+    {
+      "tag": "forge:dusts/redstone"
+    },
+    {
+      "item": "advancedrocketry:siliconwafer",
+      "count": 4
+    }
+  ],
+  "time": 1200,
+  "energy": 400,
+  "itemresults": {
+    "item": "advancedrocketry:basiccircuitwafer",
+    "count": 2
+  }
+}

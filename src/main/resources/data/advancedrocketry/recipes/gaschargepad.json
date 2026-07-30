@@ -7,7 +7,7 @@
     ],
     "key": {
         "t": {
-            "item": "advancedrocketry:pressuretank"
+            "item": "advancedrocketry:monopropellantfueltank"
         },
 		"i": {
             "item": "advancedrocketry:userinterface"

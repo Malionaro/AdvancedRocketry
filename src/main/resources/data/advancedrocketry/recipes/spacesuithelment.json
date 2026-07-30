@@ -10,8 +10,8 @@
 	   	 "tag": "minecraft:wool",
             "data": 32767
         },
-		"g": {
-            "tag": "forge:glass_panes"
+	    "g": {
+            "tag": "forge:glass_panes/colorless"
         },
 		"r": {
             "tag": "forge:rods/iron"

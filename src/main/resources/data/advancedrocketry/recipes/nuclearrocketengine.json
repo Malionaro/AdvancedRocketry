@@ -7,10 +7,10 @@
     ],
     "key": {
         "s": {
-            "tag": "forge:ingots/titaniumaluminide"
+            "tag": "forge:ingots/titaniumiridium"
         },
 	    "t": {
-            "tag": "forge:plates/titaniumiridium"
+            "tag": "forge:plates/titaniumaluminide"
         },
         "d": {
           "tag": "forge:gems/dilithium"

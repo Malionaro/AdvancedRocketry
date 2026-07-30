@@ -22,6 +22,7 @@ import zmaster587.advancedRocketry.item.ItemStationChip;
 import zmaster587.advancedRocketry.item.ItemStationChip.LandingLocation;
 import zmaster587.advancedRocketry.stations.SpaceObjectManager;
 import zmaster587.advancedRocketry.stations.SpaceStationObject;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.advancedRocketry.util.PlanetaryTravelHelper;
 import zmaster587.advancedRocketry.util.StationLandingLocation;
 import zmaster587.libVulpes.api.LibVulpesItems;
@@ -321,10 +322,8 @@ public class TileGuidanceComputer extends TileInventoryHatch implements IModular
 	@Override
 	public void read(BlockState state, CompoundNBT nbt) {
 		super.read(state, nbt);
-		if(nbt.contains("destDimId"))
-			destinationId = new ResourceLocation(nbt.getString("destDimId"));
-		else
-			destinationId = Constants.INVALID_PLANET;
+		ResourceLocation loadedDestination = LegacyDimensionIdMigration.read(nbt, "destDimId");
+		destinationId = loadedDestination != null ? loadedDestination : Constants.INVALID_PLANET;
 
 		landingPos.x = nbt.getFloat("landingx");
 		landingPos.y = nbt.getFloat("landingy");
@@ -336,8 +335,9 @@ public class TileGuidanceComputer extends TileInventoryHatch implements IModular
 			CompoundNBT tag = stationList.getCompound(i);
 			int[] pos;
 			pos = tag.getIntArray("pos");
-			ResourceLocation id = new ResourceLocation(tag.getString("id"));
-			landingLoc.put(id, new HashedBlockPosition(pos[0], pos[1], pos[2]));
+			ResourceLocation id = LegacyDimensionIdMigration.read(tag, "id");
+			if(id != null && pos.length >= 3)
+				landingLoc.put(id, new HashedBlockPosition(pos[0], pos[1], pos[2]));
 		}
 	}
 

@@ -6,8 +6,8 @@
 		"msm"
     ],
     "key": {
-		"b": {
-		    "item": "libvulpes:batterypack"
+        "b": {
+            "item": "libvulpes:battery"
         },
 		"s": {
 		    "item": "advancedrocketry:userinterface"

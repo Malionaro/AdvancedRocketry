@@ -152,8 +152,9 @@ public class TileSatelliteAssembler extends TileMultiPowerConsumer implements IM
 		boolean isStation = stack0.getItem() instanceof ItemStationChip && !ItemStationChip.getUUID(stack0).equals(DimensionManager.overworldProperties.getId()) && stack1.getItem() instanceof ItemStationChip;
 		boolean isPlanet = (stack0.getItem() instanceof ItemPlanetChip && stack1.getItem() instanceof ItemPlanetChip);
 		boolean isOreScanner = (stack0.getItem() instanceof ItemOreScanner && stack1.getItem() instanceof ItemOreScanner);
+		boolean isBiomeChanger = (stack0.getItem() instanceof ItemBiomeChanger && stack1.getItem() instanceof ItemBiomeChanger);
 		return !isRunning() && getStackInSlot(outputSlot).isEmpty() && (isStation || stack0.hasTag()) && 
-				(isSatellite  || isStation || isPlanet || isOreScanner);
+				(isSatellite  || isStation || isPlanet || isOreScanner || isBiomeChanger);
 	}
 
 	private void copyChip() {
@@ -161,7 +162,7 @@ public class TileSatelliteAssembler extends TileMultiPowerConsumer implements IM
 		ItemStack slot0 = getStackInSlot(chipSlot);
 		ItemStack slot1 = getStackInSlot(chipCopySlot);
 
-		if(slot0.getItem() instanceof ItemSatelliteChip || slot0.getItem() instanceof ItemOreScanner || slot0.getItem() instanceof ItemPlanetChip || slot0.getItem() instanceof ItemStationChip) {
+		if(slot0.getItem() instanceof ItemSatelliteChip || slot0.getItem() instanceof ItemOreScanner || slot0.getItem() instanceof ItemBiomeChanger || slot0.getItem() instanceof ItemPlanetChip || slot0.getItem() instanceof ItemStationChip) {
 			setInventorySlotContents(holdingSlot, getStackInSlot(chipSlot).copy());
 		} else {
 			ItemSatelliteChip itemIdChip = (ItemSatelliteChip)slot1.getItem();

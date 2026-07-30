@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "advancedrocketry:ironpressuretank",
+    "advancedrocketry:steelpressuretank",
+    "advancedrocketry:aluminumpressuretank",
+    "advancedrocketry:titaniumpressuretank"
+  ]
+}

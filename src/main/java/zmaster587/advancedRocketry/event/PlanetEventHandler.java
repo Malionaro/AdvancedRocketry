@@ -8,13 +8,18 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerEntity.SleepResult;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.LockableLootTileEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -25,10 +30,13 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggedOutEvent;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.client.event.EntityViewRenderEvent.FogColors;
 import net.minecraftforge.client.event.EntityViewRenderEvent.RenderFogEvent;
 import net.minecraftforge.event.TickEvent;
@@ -36,10 +44,13 @@ import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.Event.Result;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -57,12 +68,15 @@ import zmaster587.advancedRocketry.atmosphere.AtmosphereHandler;
 import zmaster587.advancedRocketry.atmosphere.AtmosphereType;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
+import zmaster587.advancedRocketry.entity.EntityRocket;
 import zmaster587.advancedRocketry.network.PacketDimInfo;
 import zmaster587.advancedRocketry.network.PacketSpaceStationInfo;
 import zmaster587.advancedRocketry.network.PacketStellarInfo;
 import zmaster587.advancedRocketry.stations.SpaceObjectManager;
 import zmaster587.advancedRocketry.stations.SpaceStationObject;
 import zmaster587.advancedRocketry.util.SpawnListEntryNBT;
+import zmaster587.advancedRocketry.util.BiomeHandler;
+import zmaster587.advancedRocketry.util.LegacyItemStackMigration;
 import zmaster587.advancedRocketry.util.TransitionEntity;
 import zmaster587.advancedRocketry.world.util.TeleporterNoPortal;
 import zmaster587.advancedRocketry.world.util.WorldDummy;
@@ -70,17 +84,26 @@ import zmaster587.libVulpes.api.IModularArmor;
 import zmaster587.libVulpes.network.PacketHandler;
 import zmaster587.libVulpes.util.HashedBlockPosition;
 import zmaster587.libVulpes.util.ZUtils;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 public class PlanetEventHandler {
 
 	public static long time = 0;
 	private static long endTime, duration;
 	private static List<TransitionEntity> transitionMap = new LinkedList<>();
+	private final Map<ServerWorld, Set<Chunk>> loadedChunks = new WeakHashMap<>();
 
 	public static void addDelayedTransition(TransitionEntity entity) {
 		transitionMap.add(entity);
@@ -276,6 +299,7 @@ public class PlanetEventHandler {
 	@SubscribeEvent
 	public void playerLoggedInEvent(PlayerLoggedInEvent event) {
 		PlayerEntity mgr = event.getPlayer();
+		LegacyItemStackMigration.migrateInventory(mgr.inventory);
 
 		//Send config first
 		//DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> { PacketHandler.sendToPlayer(new PacketConfigSync(), mgr); } );
@@ -302,14 +326,160 @@ public class PlanetEventHandler {
 
 	@SubscribeEvent
 	public void worldLoadEvent(WorldEvent.Load event) {
-		if(!event.getWorld().isRemote())
+		if(!event.getWorld().isRemote()) {
 			AtmosphereHandler.registerWorld((World)event.getWorld());
+			if(event.getWorld() instanceof ServerWorld)
+				loadedChunks.computeIfAbsent((ServerWorld)event.getWorld(), world -> new HashSet<>());
+		}
+	}
+
+	@SubscribeEvent
+	public void containerOpen(PlayerContainerEvent.Open event) {
+		if(event.getPlayer().world.isRemote)
+			return;
+
+		event.getContainer().inventorySlots.forEach(slot -> {
+			ItemStack original = slot.getStack();
+			ItemStack migrated = LegacyItemStackMigration.migrate(original);
+			if(migrated != original)
+				slot.putStack(migrated);
+		});
+	}
+
+	@SubscribeEvent
+	public void entityJoinWorld(EntityJoinWorldEvent event) {
+		if(event.getWorld().isRemote())
+			return;
+
+		if(event.getEntity() instanceof ItemEntity) {
+			ItemEntity item = (ItemEntity)event.getEntity();
+			ItemStack original = item.getItem();
+			ItemStack migrated = LegacyItemStackMigration.migrate(original);
+			if(migrated != original)
+				item.setItem(migrated);
+		}
+		else if(event.getEntity() instanceof EntityRocket) {
+			EntityRocket rocket = (EntityRocket)event.getEntity();
+			if(rocket.storage != null)
+				rocket.storage.getInventoryTiles().forEach(this::migrateTileInventory);
+		}
 	}
 
 	@SubscribeEvent
 	public void worldUnloadEvent(WorldEvent.Unload event) {
-		if(!event.getWorld().isRemote())
+		if(!event.getWorld().isRemote()) {
 			AtmosphereHandler.unregisterWorld((World) event.getWorld());
+			if(event.getWorld() instanceof ServerWorld)
+				loadedChunks.remove((ServerWorld)event.getWorld());
+		}
+	}
+
+	@SubscribeEvent
+	public void chunkLoadEvent(ChunkEvent.Load event) {
+		if(event.getWorld() instanceof ServerWorld && event.getChunk() instanceof Chunk) {
+			loadedChunks.computeIfAbsent((ServerWorld)event.getWorld(), world -> new HashSet<>())
+					.add((Chunk)event.getChunk());
+			((Chunk)event.getChunk()).getTileEntityMap().values().forEach(this::migrateTileInventory);
+		}
+	}
+
+	private void migrateTileInventory(TileEntity tile) {
+		// Reading a slot from an unopened chest/barrel resolves its loot table.
+		// During ChunkEvent.Load that resolution marks the tile dirty and asks the
+		// chunk provider for the same chunk, deadlocking initial spawn generation.
+		// Such containers cannot contain legacy AR stacks until their loot table has
+		// been resolved, so leave them untouched until a later chunk load.
+		if(tile instanceof LockableLootTileEntity
+				&& tile.write(new CompoundNBT()).contains("LootTable", Constants.NBT.TAG_STRING))
+			return;
+
+		if(tile instanceof IInventory) {
+			LegacyItemStackMigration.migrateInventory((IInventory)tile);
+			tile.markDirty();
+			return;
+		}
+
+		tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(handler -> {
+			if(handler instanceof IItemHandlerModifiable) {
+				IItemHandlerModifiable modifiable = (IItemHandlerModifiable)handler;
+				for(int slot = 0; slot < handler.getSlots(); slot++) {
+					ItemStack original = handler.getStackInSlot(slot);
+					ItemStack migrated = LegacyItemStackMigration.migrate(original);
+					if(migrated != original)
+						modifiable.setStackInSlot(slot, migrated);
+				}
+				tile.markDirty();
+			}
+		});
+	}
+
+	@SubscribeEvent
+	public void chunkUnloadEvent(ChunkEvent.Unload event) {
+		if(event.getWorld() instanceof ServerWorld && event.getChunk() instanceof Chunk) {
+			Set<Chunk> chunks = loadedChunks.get((ServerWorld)event.getWorld());
+			if(chunks != null)
+				chunks.remove(event.getChunk());
+		}
+	}
+
+	@SubscribeEvent
+	public void terraformWorldTick(TickEvent.WorldTickEvent event) {
+		if(event.phase != TickEvent.Phase.END || event.world.isRemote
+				|| !ARConfiguration.getCurrentConfig().allowTerraforming.get()
+				|| !(event.world instanceof ServerWorld))
+			return;
+
+		ServerWorld world = (ServerWorld)event.world;
+		DimensionProperties properties = DimensionManager.getInstance()
+				.getDimensionProperties(ZUtils.getDimensionIdentifier(world));
+		if(properties == null || !properties.isTerraformed()
+				|| properties.getTerraformedBiomes().isEmpty()
+				|| (!properties.isNativeDimension && !ARConfiguration.getCurrentConfig().allowTerraformNonAR.get())
+				|| properties.isAsteroid())
+			return;
+
+		Set<Chunk> trackedChunks = loadedChunks.get(world);
+		if(trackedChunks == null || trackedChunks.isEmpty())
+			return;
+
+		List<Chunk> chunks = new ArrayList<>(trackedChunks);
+		int updatesPerTick = ARConfiguration.getCurrentConfig().terraformingBlockSpeed.get();
+		Set<Chunk> changedChunks = new HashSet<>();
+		for(Chunk chunk : chunks) {
+			if(updatesPerTick > chunks.size() || world.rand.nextFloat() < updatesPerTick / (float)chunks.size()) {
+				int coordinate = world.rand.nextInt(256);
+				int x = (coordinate & 0xF) + chunk.getPos().x * 16;
+				int z = (coordinate >> 4) + chunk.getPos().z * 16;
+				Biome targetBiome = getTerraformedBiome(world, properties, x, z);
+				Chunk changedChunk = BiomeHandler.changeBiome(world, targetBiome, new BlockPos(x, 0, z));
+				if(changedChunk != null)
+					changedChunks.add(changedChunk);
+			}
+		}
+
+		for(Chunk chunk : changedChunks)
+			BiomeHandler.sendBiomeUpdate(world, chunk);
+	}
+
+	private Biome getTerraformedBiome(ServerWorld world, DimensionProperties properties, int x, int z) {
+		Biome generatedBiome = world.getChunkProvider().getChunkGenerator().getBiomeProvider()
+				.getNoiseBiome(x >> 2, 0, z >> 2);
+		if(properties.getTerraformedBiomes().contains(generatedBiome))
+			return generatedBiome;
+
+		List<Biome> biomes = new ArrayList<>();
+		for(Biome biome : properties.getTerraformedBiomes()) {
+			if(biome != null)
+				biomes.add(biome);
+		}
+		if(biomes.isEmpty())
+			return null;
+
+		long hash = world.getSeed();
+		hash ^= (long)Math.floorDiv(x, 64) * 341873128712L;
+		hash ^= (long)Math.floorDiv(z, 64) * 132897987541L;
+		hash ^= properties.getId().hashCode();
+		return biomes.get(Math.floorMod((int)(hash ^ (hash >>> 32)), biomes.size()));
 	}
 
 	/**

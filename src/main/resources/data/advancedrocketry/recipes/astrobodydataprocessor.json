@@ -16,8 +16,7 @@
             "item": "libvulpes:machinestructure"
         },
 		"p": {
-
-            "tag": "forge:plates/aluminum"
+            "tag": "forge:plates/tin"
         },
 		"c": {
 	    	"item": "advancedrocketry:planetchip"

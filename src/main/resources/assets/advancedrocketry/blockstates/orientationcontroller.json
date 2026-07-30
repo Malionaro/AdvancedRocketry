@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/orientationcontroller" },
         "facing=south,state=true": { "model": "advancedrocketry:block/orientationcontroller", "y": 180 },
         "facing=west,state=true":  { "model": "advancedrocketry:block/orientationcontroller", "y": 270 },
-        "facing=east,state=true":  { "model": "advancedrocketry:block/orientationcontroller", "y": 90 },
-        "inventory" : { "model": "advancedrocketry:block/orientationcontroller" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/orientationcontroller", "y": 90 }
     }
 }

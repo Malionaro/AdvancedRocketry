@@ -15,6 +15,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import zmaster587.advancedRocketry.api.AdvancedRocketryItems;
 import zmaster587.advancedRocketry.api.ISatelliteIdItem;
 import zmaster587.advancedRocketry.api.SatelliteRegistry;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.libVulpes.util.UniversalBattery;
 import zmaster587.libVulpes.util.ZUtils;
 
@@ -187,10 +188,7 @@ public abstract class SatelliteBase {
 	public void readFromNBT(CompoundNBT nbt) {
 		satelliteProperties.readFromNBT(nbt.getCompound("properties"));
 		
-		if(nbt.contains("dimId"))
-			dimId = Optional.of( new ResourceLocation(nbt.getString("dimId")));
-		else
-			dimId = Optional.empty();
+		dimId = Optional.ofNullable(LegacyDimensionIdMigration.read(nbt, "dimId"));
 		satellite = ItemStack.read(nbt.getCompound("item"));
 		battery.readFromNBT(nbt);
 		if (satelliteProperties.getPowerStorage() == 0) {

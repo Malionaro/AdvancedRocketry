@@ -1,37 +1,28 @@
 {
     "type": "minecraft:crafting_shaped",
     "pattern": [
+	    "psp",
 	    "abc",
-	    "def",
-	    "ghi"
+	    "rrr"
     ],
     "key": {
-        "a": {
-            "item": "minecraft:repeater"
+        "p": {
+            "tag": "forge:plates/gold"
         },
-        "b": {
+        "s": {
             "item": "advancedrocketry:userinterface"
         },
-	    "c": {
-            "item": "minecraft:comparator"
-        },
-	    "d": {
+	    "a": {
             "item": "advancedrocketry:itemiocircuit"
         },
-	    "e": {
+	    "b": {
             "item": "libvulpes:machinestructure"
         },
-	    "f": {
+        "c": {
             "item": "advancedrocketry:controlcircuit"
         },
-	    "g": {
-            "item": "minecraft:furnace"
-        },
-        "h": {
+        "r": {
             "item": "advancedrocketry:advancedcircuit"
-        },
-	    "i": {
-            "item": "minecraft:dropper"
         }
     },
     "result":

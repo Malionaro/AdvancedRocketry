@@ -1,9 +1,6 @@
 package zmaster587.advancedRocketry.unit;
 
-import com.google.common.base.Predicate;
-
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
@@ -90,12 +87,6 @@ public class IngameTestOrchestrator {
 	}
 	
 	private static PlayerEntity getPlayerByName(String name) {
-		PlayerEntity player = null;
-		for(ServerWorld world : ServerLifecycleHooks.getCurrentServer().getWorlds()) {
-			player = (PlayerEntity) world.getPlayers((Predicate<ServerPlayerEntity>) input -> input.getName().toString().equals(name));
-			if ( player != null) break;
-		}
-
-		return player;
+		return ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUsername(name);
 	}
 }

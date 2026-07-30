@@ -7,6 +7,6 @@
         "west": "advancedrocketry:blocks/machines/laserpanel",
         "east": "advancedrocketry:blocks/machines/laserpanel",
         "down": "libvulpes:blocks/machinegeneric",
-        "particle": "advancedrocketry:blocks/machinegeneric"
+        "particle": "libvulpes:blocks/machinegeneric"
     }
 }

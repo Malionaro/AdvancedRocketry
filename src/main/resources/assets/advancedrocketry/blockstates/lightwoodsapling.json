@@ -1,7 +1,6 @@
 {
     "variants": {
         "stage=0": { "model": "advancedrocketry:block/lightwoodsapling" },
-        "stage=1": { "model": "advancedrocketry:block/lightwoodsapling" },
-        "inventory" : { "model": "advancedrocketry:lightwoodsapling" }
+        "stage=1": { "model": "advancedrocketry:block/lightwoodsapling" }
     }
 }

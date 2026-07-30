@@ -1,0 +1,78 @@
+package zmaster587.libVulpes.api;
+
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.registries.IForgeRegistry;
+import zmaster587.libVulpes.block.BlockTile;
+import zmaster587.libVulpes.block.multiblock.BlockHatch;
+import zmaster587.libVulpes.tile.TilePointer;
+import zmaster587.libVulpes.tile.TileSchematic;
+import zmaster587.libVulpes.tile.energy.TileCoalGenerator;
+import zmaster587.libVulpes.tile.energy.TileCreativePowerInput;
+import zmaster587.libVulpes.tile.energy.TileForgePowerInput;
+import zmaster587.libVulpes.tile.energy.TileForgePowerOutput;
+import zmaster587.libVulpes.tile.multiblock.TilePlaceholder;
+import zmaster587.libVulpes.tile.multiblock.hatch.TileFluidHatch;
+import zmaster587.libVulpes.tile.multiblock.hatch.TileFluidOutputHatch;
+import zmaster587.libVulpes.tile.multiblock.hatch.TileInputHatch;
+import zmaster587.libVulpes.tile.multiblock.hatch.TileLegacyFluidHatch;
+import zmaster587.libVulpes.tile.multiblock.hatch.TileOutputHatch;
+
+public class LibVulpesTileEntityTypes {
+
+	public static TileEntityType<?> TILE_OUTPUT_HATCH;
+	public static TileEntityType<?> TILE_INPUT_HATCH;
+	public static TileEntityType<?> TILE_PLACEHOLDER;
+	public static TileEntityType<?> TILE_FLUID_INPUT_HATCH;
+	public static TileEntityType<?> TILE_FLUID_OUTPUT_HATCH;
+	public static TileEntityType<TileSchematic> TILE_SCHEMATIC;
+	public static TileEntityType<?> TILE_CREATIVE_BATTERY;
+	public static TileEntityType<?> TILE_FORGE_POWER_INPUT;
+	public static TileEntityType<?> TILE_FORGE_POWER_OUTPUT;
+	public static TileEntityType<?> TILE_COAL_GENERATOR;
+	public static TileEntityType<?> TILE_POINTER;
+	public static TileEntityType<?> TILE_LEGACY_FLUID_HATCH;
+	
+	
+	public static void registerTileEntities(RegistryEvent.Register<TileEntityType<?>> evt)
+	{
+		TILE_OUTPUT_HATCH = TileEntityType.Builder.create(TileOutputHatch::new, LibVulpesBlocks.blockItemOutputHatch, LibVulpesBlocks.blockLegacyHatch).build(null).setRegistryName("outputhatch");
+		TILE_INPUT_HATCH = TileEntityType.Builder.create(TileInputHatch::new, LibVulpesBlocks.blockItemInputHatch, LibVulpesBlocks.blockLegacyHatch).build(null).setRegistryName("inputhatch");
+		TILE_PLACEHOLDER = TileEntityType.Builder.create(TilePlaceholder::new, LibVulpesBlocks.blockPlaceHolder).build(null).setRegistryName("placeholder");
+		TILE_FLUID_INPUT_HATCH = TileEntityType.Builder.create(TileFluidHatch::new, LibVulpesBlocks.blockFluidInputHatch, LibVulpesBlocks.blockLegacyHatch).build(null).setRegistryName("fluidhatchinput");
+		TILE_FLUID_OUTPUT_HATCH = TileEntityType.Builder.create(TileFluidOutputHatch::new,LibVulpesBlocks.blockFluidOutputHatch, LibVulpesBlocks.blockLegacyHatch).build(null).setRegistryName("fluidhatchoutput");
+		TILE_LEGACY_FLUID_HATCH = TileEntityType.Builder.create(TileLegacyFluidHatch::new, LibVulpesBlocks.blockLegacyHatch).build(null).setRegistryName("vulpesfluidhatch");
+		TILE_SCHEMATIC = TileEntityType.Builder.create(TileSchematic::new, LibVulpesBlocks.blockPhantom).build(null);
+		TILE_CREATIVE_BATTERY = TileEntityType.Builder.create(TileCreativePowerInput::new, LibVulpesBlocks.blockCreativeInputPlug).build(null).setRegistryName("creativebattery");
+		TILE_FORGE_POWER_INPUT = TileEntityType.Builder.create(TileForgePowerInput::new, LibVulpesBlocks.blockForgeInputPlug).build(null).setRegistryName("forgepowerinput");
+		TILE_FORGE_POWER_OUTPUT = TileEntityType.Builder.create(TileForgePowerOutput::new, LibVulpesBlocks.blockForgeOutputPlug).build(null).setRegistryName("forgepoweroutput");
+		TILE_COAL_GENERATOR = TileEntityType.Builder.create(TileCoalGenerator::new, LibVulpesBlocks.blockCoalGenerator).build(null).setRegistryName("coalgenerator");
+		TILE_POINTER = TileEntityType.Builder.create(TilePointer::new, LibVulpesBlocks.blockCoalGenerator).build(null).setRegistryName("pointer");
+		
+	
+		IForgeRegistry<TileEntityType<?>> r = evt.getRegistry();
+		r.register(LibVulpesTileEntityTypes.TILE_INPUT_HATCH);
+		r.register(LibVulpesTileEntityTypes.TILE_OUTPUT_HATCH);
+		r.register(LibVulpesTileEntityTypes.TILE_PLACEHOLDER);
+		r.register(LibVulpesTileEntityTypes.TILE_FLUID_INPUT_HATCH);
+		r.register(LibVulpesTileEntityTypes.TILE_FLUID_OUTPUT_HATCH);
+		r.register(LibVulpesTileEntityTypes.TILE_SCHEMATIC.setRegistryName("schematic"));
+		r.register(LibVulpesTileEntityTypes.TILE_CREATIVE_BATTERY);
+		r.register(LibVulpesTileEntityTypes.TILE_FORGE_POWER_INPUT);
+		r.register(LibVulpesTileEntityTypes.TILE_FORGE_POWER_OUTPUT);
+		r.register(LibVulpesTileEntityTypes.TILE_COAL_GENERATOR);
+		r.register(LibVulpesTileEntityTypes.TILE_POINTER);
+		r.register(LibVulpesTileEntityTypes.TILE_LEGACY_FLUID_HATCH);
+		
+		assignTileTypesToBlock();
+	}
+	
+	static void assignTileTypesToBlock()
+	{
+		((BlockTile)LibVulpesBlocks.blockCoalGenerator)._setTile( LibVulpesTileEntityTypes.TILE_COAL_GENERATOR);
+		((BlockHatch)LibVulpesBlocks.blockItemInputHatch)._setTile( LibVulpesTileEntityTypes.TILE_INPUT_HATCH);
+		((BlockHatch)LibVulpesBlocks.blockFluidInputHatch)._setTile( LibVulpesTileEntityTypes.TILE_FLUID_INPUT_HATCH);
+		((BlockHatch)LibVulpesBlocks.blockItemOutputHatch)._setTile( LibVulpesTileEntityTypes.TILE_OUTPUT_HATCH);
+		((BlockHatch)LibVulpesBlocks.blockFluidOutputHatch)._setTile( LibVulpesTileEntityTypes.TILE_FLUID_OUTPUT_HATCH);
+	}
+}

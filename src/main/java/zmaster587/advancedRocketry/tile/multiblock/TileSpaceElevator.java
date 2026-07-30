@@ -25,6 +25,7 @@ import zmaster587.advancedRocketry.entity.EntityElevatorCapsule;
 import zmaster587.advancedRocketry.stations.SpaceObjectManager;
 import zmaster587.advancedRocketry.stations.SpaceStationObject;
 import zmaster587.advancedRocketry.util.DimensionBlockPosition;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.advancedRocketry.util.PlanetaryTravelHelper;
 import zmaster587.libVulpes.LibVulpes;
 import zmaster587.libVulpes.api.LibVulpesBlocks;
@@ -438,9 +439,12 @@ boolean openFullScreen = false;
 
 
 		if(nbt.contains("dstDimId")) {
-			ResourceLocation id = new ResourceLocation(nbt.getString("dstDimId"));
+			ResourceLocation id = LegacyDimensionIdMigration.read(nbt, "dstDimId");
 			int[] pos = nbt.getIntArray("dstPos");
-			dimBlockPos = new DimensionBlockPosition(id, new HashedBlockPosition(pos[0], pos[1], pos[2]));
+			if(id != null && pos.length >= 3)
+				dimBlockPos = new DimensionBlockPosition(id, new HashedBlockPosition(pos[0], pos[1], pos[2]));
+			else
+				dimBlockPos = null;
 		}
 		else
 			dimBlockPos = null;

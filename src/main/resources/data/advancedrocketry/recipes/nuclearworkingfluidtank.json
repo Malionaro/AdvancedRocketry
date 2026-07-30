@@ -12,8 +12,8 @@
         "S": {
             "tag": "forge:sheets/titanium"
         },
-	    "p": {
-            "tag": "forge:plates/steel"
+        "p": {
+            "tag": "forge:plates/titanium"
         }
     },
     "result": {

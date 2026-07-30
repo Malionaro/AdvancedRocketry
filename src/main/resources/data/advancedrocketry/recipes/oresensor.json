@@ -10,10 +10,10 @@
         "tag": "forge:rods/copper"
         },
         "s": {
-            "tag": "forge:sheets/aluminum"
+            "tag": "forge:sheets/iron"
         },
         "c": {
-            "item": "advancedrocketry:basiccircuit"
+            "item": "advancedrocketry:trackingcircuit"
         },
         "w": {
             "item": "advancedrocketry:orescanner"

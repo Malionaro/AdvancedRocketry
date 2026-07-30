@@ -79,6 +79,7 @@ public class ClientProxy extends CommonProxy {
 		ClientRegistry.bindTileEntityRenderer(AdvancedRocketryTileEntityType.TILE_SOLAR_ARRAY, RendererSolarArray::new);
 
 		RenderingRegistry.registerEntityRenderingHandler(AdvancedRocketryEntities.ENTITY_ROCKET, new RendererRocket(null));
+		RenderingRegistry.registerEntityRenderingHandler(AdvancedRocketryEntities.ENTITY_DEPLOYED_ROCKET, new RendererRocket(null));
 		RenderingRegistry.registerEntityRenderingHandler(AdvancedRocketryEntities.ENTITY_LASER_NODE, new RenderLaser(2.0, new float[] {1F, 0.25F, 0.25F, 0.2F}, new float[] {0.9F, 0.2F, 0.3F, 0.5F}));
 		RenderingRegistry.registerEntityRenderingHandler(AdvancedRocketryEntities.ENTITY_ITEM_ABDUCTED, new RendererItem(Minecraft.getInstance().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(AdvancedRocketryEntities.ENTITY_UIPLANET, new RenderPlanetUIEntity(null));

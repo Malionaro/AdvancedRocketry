@@ -13,10 +13,10 @@
             "item": "advancedrocketry:userinterface"
         },
 	    "i": {
-            "item": "advancedrocketry:controlcircuit"
+            "item": "advancedrocketry:itemiocircuit"
         },
     	"e": {
-            "item": "advancedrocketry:itemiocircuit"
+            "item": "advancedrocketry:controlcircuit"
         },
     	"c": {
             "item": "advancedrocketry:blastbrick"

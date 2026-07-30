@@ -1,0 +1,43 @@
+block.libvulpes.libvulpes.hatch.0.name=Entrada
+block.libvulpes.libvulpes.hatch.1.name=Salida
+block.libvulpes.libvulpes.hatch.2.name=Entrada de líquidos
+block.libvulpes.libvulpes.hatch.3.name=Salida de líquidos
+block.libvulpes.libvulpes.rfBattery.name=Enchufe de flujo de redstone (RF)
+block.libvulpes.libvulpes.IC2Plug.name=Enchufe de IC2 (EU)
+block.libvulpes.libvulpes.structure_machine.name=Estructura de máquina
+block.libvulpes.libvulpes.block.libvulpesGenericMachine.name=Bloque de control de máquinas
+block.libvulpes.libvulpes.coilsilicon.name=Bobina de silicio
+block.libvulpes.libvulpes.coilcopper.name=Bobina de cobre
+block.libvulpes.libvulpes.coiltin.name=Bobina de estaño
+block.libvulpes.libvulpes.coilsteel.name=Bobina de acero
+block.libvulpes.libvulpes.coil=Bobina
+block.libvulpes.libvulpes.Copper.name=Mena de cobre
+block.libvulpes.libvulpes.Tin.name=Mena de estaño
+block.libvulpes.libvulpes.Rutile.libvulpes.name=Mena de rutilo
+block.libvulpes.libvulpes.motor.name=Motor
+
+
+item.libvulpes.holo_projector.name=Proyector de hologramas
+
+material.Gold.name=Oro
+material.Iron.name=Hierro
+material.Silicon.name=Silicio
+material.Copper.name=Cobre
+material.Tin.name=Aluminio
+material.Steel.name=Acero
+material.Titanium.name=Titanio
+material.Rutile.libvulpes.libvulpes.name=Rutilo
+
+type.gem.name=Cristal
+type.dust.name=Polvo
+type.boule.name=Boulé
+type.ingot.name=Lingote
+type.nugget.name=Pepita
+type.rod.name=Vara
+type.plate.name=Placa
+type.ore.name=Mena
+type.block.libvulpes.libvulpes.name=Bloque
+type.coilname=Bobina
+type.fan.name=Ventilador
+type.sheet.name=Lámina
+type.gear.name=Engranaje

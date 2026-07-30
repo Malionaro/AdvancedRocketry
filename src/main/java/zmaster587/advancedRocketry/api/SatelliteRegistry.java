@@ -74,7 +74,10 @@ public class SatelliteRegistry {
 	 * @return Satellite constructed from the passed NBT
 	 */
 	public static SatelliteBase createFromNBT(CompoundNBT nbt) {
-		SatelliteBase satellite = getSatellite(nbt.getString("dataType"));
+		// 1.12.2 rocket payloads used "DataType", while orbiting satellites used
+		// "dataType". Accept both spellings so either legacy storage path loads.
+		String type = nbt.contains("dataType") ? nbt.getString("dataType") : nbt.getString("DataType");
+		SatelliteBase satellite = getSatellite(type);
 
 		satellite.readFromNBT(nbt);
 

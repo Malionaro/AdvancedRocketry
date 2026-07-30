@@ -122,14 +122,14 @@ public class AdvancedRocketryTileEntityType {
 	
 	public static void registerTileEntities(RegistryEvent.Register<TileEntityType<?>> evt) {
 		TILE_WIRELESS_TRANSCEIVER = TileEntityType.Builder.create(TileWirelessTransceiver::new, AdvancedRocketryBlocks.blockWirelessTransceiver).build(null);
-		TILE_DATA_BUS = TileEntityType.Builder.create(TileDataBus::new, AdvancedRocketryBlocks.blockDataBus).build(null);
+		TILE_DATA_BUS = TileEntityType.Builder.create(TileDataBus::new, AdvancedRocketryBlocks.blockDataBus, AdvancedRocketryBlocks.blockLegacyLoader).build(null);
 		TILE_FUELING_STATION = TileEntityType.Builder.create(TileFuelingStation::new, AdvancedRocketryBlocks.blockFuelingStation).build(null);
 		TILE_ROCKET_CONTROL_CENTER = TileEntityType.Builder.create(TileRocketControlCenter::new, AdvancedRocketryBlocks.blockRocketControlCenter).build(null);
-		TILE_GUIDANCE_COMPUTER__ACCESS_HATCH = TileEntityType.Builder.create(TileGuidanceComputerAccessHatch::new, AdvancedRocketryBlocks.blockGuidanceComputerAccessHatch).build(null);
-		TILE_FLUID_LOADER = TileEntityType.Builder.create(TileRocketFluidLoader::new, AdvancedRocketryBlocks.blockFluidLoader).build(null);
-		TILE_FLUID_UNLOADER = TileEntityType.Builder.create(TileRocketFluidUnloader::new, AdvancedRocketryBlocks.blockFluidUnloader).build(null);
-		TILE_ROCKET_LOADER = TileEntityType.Builder.create(TileRocketLoader::new, AdvancedRocketryBlocks.blockRocketLoader).build(null);
-		TILE_ROCKET_UNLOADER = TileEntityType.Builder.create(TileRocketUnloader::new, AdvancedRocketryBlocks.blockRocketUnloader).build(null);
+		TILE_GUIDANCE_COMPUTER__ACCESS_HATCH = TileEntityType.Builder.create(TileGuidanceComputerAccessHatch::new, AdvancedRocketryBlocks.blockGuidanceComputerAccessHatch, AdvancedRocketryBlocks.blockLegacyLoader).build(null);
+		TILE_FLUID_LOADER = TileEntityType.Builder.create(TileRocketFluidLoader::new, AdvancedRocketryBlocks.blockFluidLoader, AdvancedRocketryBlocks.blockLegacyLoader).build(null);
+		TILE_FLUID_UNLOADER = TileEntityType.Builder.create(TileRocketFluidUnloader::new, AdvancedRocketryBlocks.blockFluidUnloader, AdvancedRocketryBlocks.blockLegacyLoader).build(null);
+		TILE_ROCKET_LOADER = TileEntityType.Builder.create(TileRocketLoader::new, AdvancedRocketryBlocks.blockRocketLoader, AdvancedRocketryBlocks.blockLegacyLoader).build(null);
+		TILE_ROCKET_UNLOADER = TileEntityType.Builder.create(TileRocketUnloader::new, AdvancedRocketryBlocks.blockRocketUnloader, AdvancedRocketryBlocks.blockLegacyLoader).build(null);
 		TILE_BLACK_HOLE_GENERATOR = TileEntityType.Builder.create(TileBlackHoleGenerator::new, AdvancedRocketryBlocks.blockBlackHoleGenerator).build(null);
 		TILE_MICROWAVE_RECEIVER = TileEntityType.Builder.create(TileMicrowaveReciever::new, AdvancedRocketryBlocks.blockMicrowaveReceiver).build(null);
 		TILE_CENTRIFUGE = TileEntityType.Builder.create(TileCentrifuge::new, AdvancedRocketryBlocks.blockCentrifuge).build(null);
@@ -178,7 +178,7 @@ public class AdvancedRocketryTileEntityType {
 		TILE_SEAL = TileEntityType.Builder.create(TileSeal::new, AdvancedRocketryBlocks.blockSeal).build(null);
 		TILE_STATION_DEPLOYED_ASSEMBLER = TileEntityType.Builder.create(TileUnmannedRocketAssembler::new, AdvancedRocketryBlocks.blockUnmannedRocketAssembler).build(null);
 		TILE_GUIDANCE_COMPUTER = TileEntityType.Builder.create(TileGuidanceComputer::new, AdvancedRocketryBlocks.blockGuidanceComputer).build(null);
-		TILE_SATELLITE_BAY = TileEntityType.Builder.create(TileSatelliteBay::new, AdvancedRocketryBlocks.blockSatelliteBay).build(null);
+		TILE_SATELLITE_BAY = TileEntityType.Builder.create(TileSatelliteBay::new, AdvancedRocketryBlocks.blockSatelliteBay, AdvancedRocketryBlocks.blockLegacyLoader).build(null);
 		TILE_SOLAR_ARRAY = TileEntityType.Builder.create(TileSolarArray::new, AdvancedRocketryBlocks.blockSolarArray).build(null);
 		
 		IForgeRegistry<TileEntityType<?>> r = evt.getRegistry();

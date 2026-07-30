@@ -16,8 +16,5 @@
         "type=topedge": { "model": "advancedrocketry:block/launchpad_topedge" },
         "type=rightedge": { "model": "advancedrocketry:block/launchpad_rightedge" },
         "type=noedge": { "model": "advancedrocketry:block/launchpad_noedge" }
-    },
-    "inventory": {
-        "model": "advancedrocketry:block/launchpad_all"
     }
 }

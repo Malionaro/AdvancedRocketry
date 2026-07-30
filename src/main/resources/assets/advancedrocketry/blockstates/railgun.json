@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/railgun" },
         "facing=south,state=true": { "model": "advancedrocketry:block/railgun", "y": 180 },
         "facing=west,state=true":  { "model": "advancedrocketry:block/railgun", "y": 270 },
-        "facing=east,state=true":  { "model": "advancedrocketry:block/railgun", "y": 90 },
-        "inventory" : { "model": "advancedrocketry:block/railgun" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/railgun", "y": 90 }
     }
 }

@@ -1,0 +1,45 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+output
+.gradle
+
+# other
+eclipse
+run
+libVulpes.txt
+*.xcf
+/libs
+/models
+/crash-reports
+run/
+.idea/
+out/
+.run/
+libs
+/models
+
+# minecraft
+asm
+blueprints
+/config
+logs
+mods
+resourcepacks
+saves
+screenshots
+crash-reports

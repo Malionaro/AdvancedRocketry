@@ -70,7 +70,7 @@ public class EntityStationDeployedRocket extends EntityRocket {
 	}
 
 	public EntityStationDeployedRocket(World world, StorageChunk storage, StatsRocket stats, double x, double y, double z) {
-		super(world, storage, stats, x,y,z);
+		super(AdvancedRocketryEntities.ENTITY_DEPLOYED_ROCKET, world, storage, stats, x,y,z);
 		launchLocation = new HashedBlockPosition((int)x,(int)y,(int)z);
 		launchDirection = Direction.DOWN;
 		stats.setSeatLocation(-1, -1, -1); //No seats

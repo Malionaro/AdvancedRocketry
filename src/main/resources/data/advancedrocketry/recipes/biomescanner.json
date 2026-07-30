@@ -7,16 +7,16 @@
     ],
     "key": {
 	    "l": {
-            "item": "advancedrocketry:compositionsensor"
+            "item": "advancedrocketry:biomechangercomponent"
         },
     	"s": {
 	        "item": "libvulpes:machinestructure"
         },
     	"p": {
-            "tag": "forge:plates/aluminum"
+            "tag": "forge:plates/tin"
         },
 	    "b": {
-            "item": "libvulpes:batterypack"
+            "item": "libvulpes:battery"
         }
     },
     "result": {

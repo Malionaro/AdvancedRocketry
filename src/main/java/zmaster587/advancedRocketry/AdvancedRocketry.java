@@ -21,6 +21,7 @@ import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -56,6 +57,7 @@ import zmaster587.advancedRocketry.dimension.DimensionProperties.Temps;
 import zmaster587.advancedRocketry.enchant.EnchantmentSpaceBreathing;
 import zmaster587.advancedRocketry.event.PlanetEventHandler;
 import zmaster587.advancedRocketry.integration.CompatibilityMgr;
+import zmaster587.advancedRocketry.integration.GalacticCraftHandler;
 import zmaster587.advancedRocketry.mission.MissionGasCollection;
 import zmaster587.advancedRocketry.mission.MissionOreMining;
 import zmaster587.advancedRocketry.network.*;
@@ -67,6 +69,7 @@ import zmaster587.advancedRocketry.recipe.RecipeElectricArcFurnace;
 import zmaster587.advancedRocketry.recipe.RecipeElectrolyzer;
 import zmaster587.advancedRocketry.recipe.RecipeLathe;
 import zmaster587.advancedRocketry.recipe.RecipePrecisionAssembler;
+import zmaster587.advancedRocketry.recipe.RecipePrecisionLaserEtcher;
 import zmaster587.advancedRocketry.recipe.RecipeRollingMachine;
 import zmaster587.advancedRocketry.recipe.RecipeSmallPresser;
 import zmaster587.advancedRocketry.satellite.*;
@@ -140,6 +143,7 @@ public class AdvancedRocketry {
 		MinecraftForge.EVENT_BUS.addListener(this::serverStarted);
 		MinecraftForge.EVENT_BUS.addListener(this::serverStarting);
 		MinecraftForge.EVENT_BUS.addListener(this::serverStopped);
+		MinecraftForge.EVENT_BUS.addListener(this::tagsUpdated);
 		
 		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		
@@ -185,12 +189,14 @@ public class AdvancedRocketry {
 
 		//Satellites ---------------------------------------------------------------------------------------------
 		SatelliteRegistry.registerSatellite("optical", SatelliteOptical.class);
+		SatelliteRegistry.registerSatellite("density", SatelliteDensity.class);
 		SatelliteRegistry.registerSatellite("composition", SatelliteComposition.class);
 		SatelliteRegistry.registerSatellite("mass", SatelliteMassScanner.class);
 		SatelliteRegistry.registerSatellite("asteroidMiner", MissionOreMining.class);
 		SatelliteRegistry.registerSatellite("gasMining", MissionGasCollection.class);
 		SatelliteRegistry.registerSatellite("solarEnergy", SatelliteMicrowaveEnergy.class);
 		SatelliteRegistry.registerSatellite("oreScanner", SatelliteOreMapping.class);
+		SatelliteRegistry.registerSatellite("biomeChanger", SatelliteBiomeChanger.class);
 		
 		//Register Satellite Properties
 		SatelliteRegistry.registerSatelliteProperty(new ItemStack(AdvancedRocketryItems.itemOpticalSensor, 1), new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteOptical.class)));
@@ -198,8 +204,17 @@ public class AdvancedRocketry {
 		SatelliteRegistry.registerSatelliteProperty(new ItemStack(AdvancedRocketryItems.itemMassSensor, 1), new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteMassScanner.class)));
 		SatelliteRegistry.registerSatelliteProperty(new ItemStack(AdvancedRocketryItems.itemMicrowaveTransmitter, 1), new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteMicrowaveEnergy.class)));
 		SatelliteRegistry.registerSatelliteProperty(new ItemStack(AdvancedRocketryItems.itemOreSensor, 1), new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteOreMapping.class)));
+		SatelliteRegistry.registerSatelliteProperty(new ItemStack(AdvancedRocketryItems.itemBiomeChanger, 1), new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteBiomeChanger.class)));
 		SatelliteRegistry.registerSatelliteProperty(new ItemStack(AdvancedRocketryItems.itemSolarPanel,1), new SatelliteProperties().setPowerGeneration(4));
 		SatelliteRegistry.registerSatelliteProperty(new ItemStack(AdvancedRocketryItems.itemLargeSolarPanel,1), new SatelliteProperties().setPowerGeneration(40));
+		registerLegacySatelliteProperty(AdvancedRocketryItems.itemLegacySatellitePrimaryFunction, 0, new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteOptical.class)));
+		registerLegacySatelliteProperty(AdvancedRocketryItems.itemLegacySatellitePrimaryFunction, 1, new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteComposition.class)));
+		registerLegacySatelliteProperty(AdvancedRocketryItems.itemLegacySatellitePrimaryFunction, 2, new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteMassScanner.class)));
+		registerLegacySatelliteProperty(AdvancedRocketryItems.itemLegacySatellitePrimaryFunction, 3, new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteMicrowaveEnergy.class)));
+		registerLegacySatelliteProperty(AdvancedRocketryItems.itemLegacySatellitePrimaryFunction, 4, new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteOreMapping.class)));
+		registerLegacySatelliteProperty(AdvancedRocketryItems.itemLegacySatellitePrimaryFunction, 5, new SatelliteProperties().setSatelliteType(SatelliteRegistry.getKey(SatelliteBiomeChanger.class)));
+		registerLegacySatelliteProperty(AdvancedRocketryItems.itemLegacySatellitePowerSource, 0, new SatelliteProperties().setPowerGeneration(4));
+		registerLegacySatelliteProperty(AdvancedRocketryItems.itemLegacySatellitePowerSource, 1, new SatelliteProperties().setPowerGeneration(40));
 		SatelliteRegistry.registerSatelliteProperty(new ItemStack(LibVulpesItems.itemBattery, 1), new SatelliteProperties().setPowerStorage(10000));
 		SatelliteRegistry.registerSatelliteProperty(new ItemStack(LibVulpesItems.itemBatteryPack, 1), new SatelliteProperties().setPowerStorage(40000));
 		SatelliteRegistry.registerSatelliteProperty(new ItemStack(AdvancedRocketryItems.itemDataUnit, 1), new SatelliteProperties().setMaxData(1000));
@@ -245,6 +260,7 @@ public class AdvancedRocketry {
 		event.getRegistry().register(RecipeChemicalReactor.INSTANCE.setRegistryName("chemicalreactor"));
 		event.getRegistry().register(RecipeCentrifuge.INSTANCE.setRegistryName("centrifuge"));
 		event.getRegistry().register(RecipeElectrolyzer.INSTANCE.setRegistryName("electrolyzer"));
+		event.getRegistry().register(RecipePrecisionLaserEtcher.INSTANCE.setRegistryName("precisionlaseretcher"));
 	}
 	
 	@SubscribeEvent
@@ -298,9 +314,35 @@ public class AdvancedRocketry {
 	}
 	
 	@SubscribeEvent(priority=EventPriority.HIGH)
-    public void registerItems(RegistryEvent.Register<Item> evt)
+	public void registerItems(RegistryEvent.Register<Item> evt)
 	{
 		AdvancedRocketryItems.registerItems(evt);
+	}
+
+	private static void registerLegacySatelliteProperty(Item item, int damage, SatelliteProperties properties) {
+		ItemStack stack = new ItemStack(item, 1);
+		stack.setDamage(damage);
+		SatelliteRegistry.registerSatelliteProperty(stack, properties);
+	}
+
+	@SubscribeEvent(priority=EventPriority.HIGH)
+	public void missingBlockMappings(RegistryEvent.MissingMappings<Block> event) {
+		LegacyRegistryMappings.remapBlocks(event);
+	}
+
+	@SubscribeEvent(priority=EventPriority.HIGH)
+	public void missingItemMappings(RegistryEvent.MissingMappings<Item> event) {
+		LegacyRegistryMappings.remapItems(event);
+	}
+
+	@SubscribeEvent(priority=EventPriority.HIGH)
+	public void missingEntityMappings(RegistryEvent.MissingMappings<EntityType<?>> event) {
+		LegacyRegistryMappings.remapEntities(event);
+	}
+
+	@SubscribeEvent(priority=EventPriority.HIGH)
+	public void missingTileEntityMappings(RegistryEvent.MissingMappings<TileEntityType<?>> event) {
+		LegacyRegistryMappings.remapTileEntities(event);
 	}
 	
 	@SubscribeEvent(priority=EventPriority.HIGH)
@@ -337,8 +379,14 @@ public class AdvancedRocketry {
 		list.add(new BlockMeta(AdvancedRocketryBlocks.blockDataBus, true));
 		TileMultiBlock.addMapping('D', list);
 		
-        //Register the machine recipes
-        TileChemicalReactor.registerRecipes();
+	}
+
+	public void tagsUpdated(TagsUpdatedEvent event) {
+		ARConfiguration.reloadTagDependentConfig();
+		TileChemicalReactor.registerRecipes();
+		TileCuttingMachine.registerVanillaWoodRecipes();
+		TileCentrifuge.registerEnrichedLavaRecipe();
+		machineRecipes.registerExternalModMaterialRecipes();
 	}
 
 	@SubscribeEvent
@@ -453,6 +501,8 @@ public class AdvancedRocketry {
 		MinecraftForge.EVENT_BUS.register(new MapGenLander());
 		AdvancedRocketryAPI.gravityManager = new GravityHandler();
 
+		if(ARConfiguration.getCurrentConfig().overrideGCAir.get())
+			GalacticCraftHandler.register();
 		CompatibilityMgr.isSpongeInstalled = ModList.get().isLoaded("sponge");
 		// End compat stuff
 
@@ -468,6 +518,7 @@ public class AdvancedRocketry {
 
 		//Add the overworld as a discovered planet
 		zmaster587.advancedRocketry.api.ARConfiguration.getCurrentConfig().initiallyKnownPlanets.add(Dimension.OVERWORLD.getLocation());
+
 	}
 
 	public void serverStarted(FMLServerStartedEvent event) {
@@ -487,6 +538,7 @@ public class AdvancedRocketry {
 
 	
 	public void serverStarting(FMLServerAboutToStartEvent event) {
+		TileCentrifuge.registerEnrichedLavaRecipe();
 		//Open ore files
 
 		//Load Asteroids from XML

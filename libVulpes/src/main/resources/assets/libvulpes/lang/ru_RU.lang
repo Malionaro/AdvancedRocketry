@@ -1,0 +1,61 @@
+itemGroup.multiblock.libvulpes=Мультиблочные машинные части
+item.libvulpes.linker.name=Связыватель
+
+block.libvulpes.hatch.0.name=Входной люк
+block.libvulpes.hatch.1.name=Выходной люк
+block.libvulpes.hatch.2.name=Элемент приёма жидкостей
+block.libvulpes.hatch.3.name=Элемент вывода жидкостей
+
+block.libvulpes.libvulpes.forge_power_input.name=Входной разъем питания
+block.libvulpes.forgePowerOutput.name=Выходной разъем питания
+block.libvulpes.creative_power_battery.name=Творческий входной разъем питания
+block.libvulpes.rfBattery.name=Redstone Flux-входной разъём (RF)
+block.libvulpes.IC2Plug.name=IC2-разъём (EU)
+block.libvulpes.GTPlug.name=Gregtech-разъём
+block.libvulpes.structure_machine.name=Структура машины
+block.libvulpes.adv_structure_machine.name=Расширенная структура машины
+block.libvulpes.blockGenericMachine.name=Блок контроллера машины
+block.libvulpes.coilsilicon.name=Кремниевая катушка
+block.libvulpes.coilcopper.name=Медная катушка
+block.libvulpes.coiltin.name=Оловянная катушка
+block.libvulpes.coilsteel.name=Стальная катушка
+block.libvulpes.coil=Катушка
+block.libvulpes.Copper.name=Медная руда
+block.libvulpes.Tin.name=Оловянная руда
+block.libvulpes.Rutile.libvulpes.name=Рутиловая руда
+block.libvulpes.Aluminum.name=Алюминиевая руда
+block.libvulpes.coal_generator.name=Угольный генератор
+block.libvulpes.motor.name=Электродвигатель
+block.libvulpes.advanced_motor.name=Расширенный электродвигатель
+block.libvulpes.enhanced_motor.name=Усовершенствованный электродвигатель
+block.libvulpes.elite_motor.name=Элитный электродвигатель
+
+item.libvulpes.holo_projector.name=Голо-проектор
+msg.linker.error.firstMachine=Это должна быть первая машина, чтобы связать!
+msg.linker.program=Координаты запрограммированны в связывателе
+msg.linker.success=Связано успешно
+
+type.gem.name=кристалл
+type.dust.name=порошок
+type.boule.name=шар
+type.ingot.name=слиток
+type.nugget.name=самородок
+type.rod.name=стержень
+type.plate.name=пластина
+type.ore.name=руда
+type.block.libvulpes.name=блок
+type.coilname=катушка
+type.fan.name=вентилятор
+type.sheet.name=лист
+type.gear.name=шестерня
+
+material.Gold.name=Золот.
+material.Iron.name=Железн.
+material.Silicon.name=Кремниев.
+material.Copper.name=Медн.
+material.Tin.name=Оловянн.
+material.Steel.name=Стальн.
+material.Titanium.name=Титанов.
+material.Rutile.name=Рутилов.
+material.Aluminum.name=Алюминиев.
+material.Iridium.name=Иридиев.

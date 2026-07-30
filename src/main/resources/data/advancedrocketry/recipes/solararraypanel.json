@@ -1,12 +1,20 @@
 {
-    "type": "minecraft:crafting_shapeless",
-    "ingredients": [
-	    {
-	        "item": "advancedrocketry:solargenerator"
-        }
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "ppp",
+        "psp",
+        "ppp"
     ],
+    "key": {
+        "s": {
+            "item": "advancedrocketry:structuretower"
+        },
+        "p": {
+            "item": "advancedrocketry:solarpanel"
+        }
+    },
     "result": {
         "item": "advancedrocketry:solararraypanel",
-        "count": 1
+        "count": 8
     }
 }

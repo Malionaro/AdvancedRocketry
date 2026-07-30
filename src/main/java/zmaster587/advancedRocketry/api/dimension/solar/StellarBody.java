@@ -7,6 +7,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.util.Constants.NBT;
 import zmaster587.advancedRocketry.api.dimension.IDimensionProperties;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.advancedRocketry.util.SpacePosition;
 
 import java.util.ArrayList;
@@ -249,7 +250,10 @@ public class StellarBody {
 	}
 
 	public void readFromNBT(CompoundNBT nbt) {
-		id = new ResourceLocation(nbt.getString("id"));
+		id = nbt.contains("id", NBT.TAG_STRING)
+				? ResourceLocation.tryCreate(nbt.getString("id"))
+				: nbt.contains("id", NBT.TAG_ANY_NUMERIC)
+					? LegacyDimensionIdMigration.fromLegacyStarId(nbt.getInt("id")) : null;
 		temperature = nbt.getInt("temperature");
 		name = nbt.getString("name");
 		posX = nbt.getShort("posX");

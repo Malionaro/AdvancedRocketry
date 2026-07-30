@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/suitworkstation" },
         "facing=south,state=true": { "model": "advancedrocketry:block/suitworkstation", "y": 180 },
         "facing=west,state=true":  { "model": "advancedrocketry:block/suitworkstation", "y": 270 },
-        "facing=east,state=true":  { "model": "advancedrocketry:block/suitworkstation", "y": 90 },
-        "inventory" : { "model": "advancedrocketry:block/suitworkstation" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/suitworkstation", "y": 90 }
     }
 }

@@ -1,5 +1,6 @@
 {
 	"selectSky": "javascript/insertSky.js",
 	"maxTimeOfDay": "javascript/insertMaxTimeOfDay.js",
-	"atmHandler": "javascript/insertAtmHandler.js"
+	"atmHandler": "javascript/insertAtmHandler.js",
+	"planetaryLight": "javascript/insertPlanetaryLight.js"
 }

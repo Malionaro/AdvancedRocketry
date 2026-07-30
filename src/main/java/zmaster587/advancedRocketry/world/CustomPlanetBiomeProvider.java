@@ -32,6 +32,8 @@ import net.minecraft.world.gen.MaxMinNoiseMixer;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import zmaster587.advancedRocketry.dimension.DimensionManager;
+import zmaster587.advancedRocketry.dimension.DimensionProperties;
 
 public class CustomPlanetBiomeProvider extends BiomeProvider {
 
@@ -51,6 +53,7 @@ public class CustomPlanetBiomeProvider extends BiomeProvider {
 	private final boolean field_235269_l_;
 	private final long field_235270_m_;
 	private final Optional<Pair<Registry<Biome>, CustomPlanetBiomeProvider.Preset>> field_235271_n_;
+	private ResourceLocation dimensionPropertiesId;
 
 	private CustomPlanetBiomeProvider(long p_i231640_1_, List<Pair<Biome.Attributes, Supplier<Biome>>> p_i231640_3_, Optional<Pair<Registry<Biome>, CustomPlanetBiomeProvider.Preset>> p_i231640_4_) {
 		this(p_i231640_1_, p_i231640_3_, field_242596_g, field_242596_g, field_242596_g, field_242596_g, p_i231640_4_);
@@ -87,7 +90,9 @@ public class CustomPlanetBiomeProvider extends BiomeProvider {
 
 	@OnlyIn(Dist.CLIENT)
 	public BiomeProvider getBiomeProvider(long p_230320_1_) {
-		return new CustomPlanetBiomeProvider(p_230320_1_, this.field_235268_k_, this.field_242597_h, this.field_242598_i, this.field_242599_j, this.field_242600_k, this.field_235271_n_);
+		CustomPlanetBiomeProvider provider = new CustomPlanetBiomeProvider(p_230320_1_, this.field_235268_k_, this.field_242597_h, this.field_242598_i, this.field_242599_j, this.field_242600_k, this.field_235271_n_);
+		provider.setDimensionPropertiesId(dimensionPropertiesId);
+		return provider;
 	}
 
 	private Optional<CustomPlanetBiomeProvider.DefaultBuilder> func_242605_d() {
@@ -97,7 +102,25 @@ public class CustomPlanetBiomeProvider extends BiomeProvider {
 	public Biome getNoiseBiome(int x, int y, int z) {
 		int i = this.field_235269_l_ ? y : 0;
 		Biome.Attributes biome$attributes = new Biome.Attributes((float)this.field_235264_g_.func_237211_a_(x, i, z), (float)this.field_235265_h_.func_237211_a_(x, i, z), (float)this.field_235266_i_.func_237211_a_(x, i, z), (float)this.field_235267_j_.func_237211_a_(x, i, z), 0.0F);
+		DimensionProperties properties = dimensionPropertiesId == null ? null
+				: DimensionManager.getInstance().getDimensionProperties(dimensionPropertiesId);
+		if(properties != null && properties.isTerraformed() && !properties.getTerraformedBiomes().isEmpty()) {
+			Optional<Biome> terraformedBiome = properties.getTerraformedBiomes().stream()
+					.filter(Objects::nonNull)
+					.min(Comparator.comparing(biome -> getAttributes(biome).getAttributeDifference(biome$attributes)))
+					;
+			if(terraformedBiome.isPresent())
+				return terraformedBiome.get();
+		}
 		return this.field_235268_k_.stream().min(Comparator.comparing((p_235272_1_) -> p_235272_1_.getFirst().getAttributeDifference(biome$attributes))).map(Pair::getSecond).map(Supplier::get).orElse(BiomeRegistry.THE_VOID);
+	}
+
+	private static Biome.Attributes getAttributes(Biome biome) {
+		return new Biome.Attributes(biome.getTemperature(), biome.getDownfall(), biome.getDepth(), biome.getScale(), 0.0F);
+	}
+
+	public void setDimensionPropertiesId(ResourceLocation dimensionPropertiesId) {
+		this.dimensionPropertiesId = dimensionPropertiesId;
 	}
 
 	public boolean func_235280_b_(long p_235280_1_) {

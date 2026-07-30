@@ -53,56 +53,67 @@ public class StructurePieceVolcano extends ScatteredStructurePiece {
 	@Override
 	public boolean func_230383_a_(ISeedReader world, StructureManager structureMgr, ChunkGenerator chunkGen, Random rand, MutableBoundingBox bb, ChunkPos chunkPos, BlockPos blockPos) {
 
-			//Standard coefficient stuff
-			int size = 64;
-			int sizeDeviation = rand.nextInt(8); // 0 -> 8
-			int baseHeight = 25;
-			int lavaNodeHeight = 25;
-			//Random coefficients for the sin functions
-			int[] sinCoefficients = {rand.nextInt(10) + 1, rand.nextInt(10) + 1, rand.nextInt(10) + 1, rand.nextInt(10) + 1, rand.nextInt(10) + 1};
-			int numBumps = rand.nextInt(5) + 1;
+		int size = 64;
+		int baseHeight = 25;
+		int lavaNodeHeight = 25;
+		int centerX = (this.boundingBox.minX + this.boundingBox.maxX) / 2;
+		int centerZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2;
+
+		// Keep the outline stable across every chunk of the structure.
+		Random shapeRandom = new Random(((long)xCenter * 341873128712L)
+				^ ((long)zCenter * 132897987541L)
+				^ sizeDeviation);
+		int[] sinCoefficients = {
+				shapeRandom.nextInt(10) + 1,
+				shapeRandom.nextInt(10) + 1,
+				shapeRandom.nextInt(10) + 1,
+				shapeRandom.nextInt(10) + 1,
+				shapeRandom.nextInt(10) + 1
+		};
+		int numBumps = shapeRandom.nextInt(5) + 1;
 
 		int xCoord = (chunkPos.x << 4);
 		int zCoord = (chunkPos.z << 4);
 
-			for(int x = 15; x >= 0; x--) {
-				for(int z = 15; z >= 0; z--) {
+		for(int x = 15; x >= 0; x--) {
+			for(int z = 15; z >= 0; z--) {
 
-					int realXcoord = (xCoord)+x;
-					int realZcoord = (zCoord)+z;
+				int realXcoord = xCoord + x;
+				int realZcoord = zCoord + z;
+				int relativeX = realXcoord - centerX;
+				int relativeZ = realZcoord - centerZ;
 
-					//Radius determination based on random functions
-					int x2 = realXcoord*realXcoord;
-					int z2 = realZcoord*realZcoord;
-					double radius = getRadius(Math.sqrt(x2 + z2), realXcoord, realZcoord,  numBumps, sinCoefficients);
-					//Do some roughness
-					int crackle = rand.nextInt(2);
+				//Radius determination based on random functions
+				int x2 = relativeX * relativeX;
+				int z2 = relativeZ * relativeZ;
+				double radius = getRadius(Math.sqrt(x2 + z2), relativeX, relativeZ, numBumps, sinCoefficients);
+				int crackle = rand.nextInt(2);
 
-					double func = 1/(Math.pow(1.028, radius-(size-sizeDeviation)*3)) + baseHeight - 8/(Math.pow(1.09, radius-((size-sizeDeviation)/2.6))) -Math.pow(1.7, radius - size*.9);
+				double func = 1/(Math.pow(1.028, radius-(size-sizeDeviation)*3)) + baseHeight - 8/(Math.pow(1.09, radius-((size-sizeDeviation)/2.6))) -Math.pow(1.7, radius - size*.9);
 
-					for(int y = 254; y >= 1; y--) {
-						boolean underSurface = func >= y+crackle;
-						boolean innerLayer = func >= y+crackle && radius < 5 && y > lavaNodeHeight;
+				for(int y = 254; y >= 1; y--) {
+					boolean underSurface = func >= y+crackle;
+					boolean innerLayer = underSurface && radius < 5 && y > lavaNodeHeight;
 
-						if(innerLayer)
-							setBlockState(world, blockEnrichedLava.get().getDefaultState(), realXcoord, y, realZcoord, bb);
-						else if(underSurface)
-							setBlockState(world, blockEnrichedLava.get().getDefaultState(), realXcoord, y, realZcoord, bb);
+					if(innerLayer)
+						setBlockState(world, blockEnrichedLava.get().getDefaultState(), realXcoord, y, realZcoord, bb);
+					else if(underSurface)
+						setBlockState(world, blockCasing.getDefaultState(), realXcoord, y, realZcoord, bb);
 
 
-						double sphereradius = (radius * radius) + (y - lavaNodeHeight)*(y - lavaNodeHeight);
-						if(sphereradius < 23*23)
-							setBlockState(world, blockEnrichedLava.get().getDefaultState(), realXcoord, y, realZcoord, bb);
-						else if(sphereradius < 25*25)
-							setBlockState(world, blockCasing.getDefaultState(), realXcoord, y, realZcoord, bb);
+					double sphereradius = x2 + z2 + (y - lavaNodeHeight)*(y - lavaNodeHeight);
+					if(sphereradius < 23*23)
+						setBlockState(world, blockEnrichedLava.get().getDefaultState(), realXcoord, y, realZcoord, bb);
+					else if(sphereradius < 25*25)
+						setBlockState(world, blockCasing.getDefaultState(), realXcoord, y, realZcoord, bb);
 
-						//For the top of the bulb, im lazy
-						if(innerLayer)
-							setBlockState(world, blockEnrichedLava.get().getDefaultState(), realXcoord, y, realZcoord, bb);
-					}
+					//For the top of the bulb, im lazy
+					if(innerLayer)
+						setBlockState(world, blockEnrichedLava.get().getDefaultState(), realXcoord, y, realZcoord, bb);
 				}
 			}
-			return true;
+		}
+		return true;
 	}
 	
 	protected void setBlockState(ISeedReader worldIn, BlockState blockstateIn, int x, int y, int z, MutableBoundingBox boundingboxIn) {

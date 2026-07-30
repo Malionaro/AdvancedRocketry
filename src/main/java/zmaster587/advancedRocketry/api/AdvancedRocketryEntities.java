@@ -10,6 +10,7 @@ import zmaster587.advancedRocketry.entity.EntityHoverCraft;
 import zmaster587.advancedRocketry.entity.EntityItemAbducted;
 import zmaster587.advancedRocketry.entity.EntityLaserNode;
 import zmaster587.advancedRocketry.entity.EntityRocket;
+import zmaster587.advancedRocketry.entity.EntityStationDeployedRocket;
 import zmaster587.advancedRocketry.entity.EntityUIButton;
 import zmaster587.advancedRocketry.entity.EntityUIPlanet;
 import zmaster587.advancedRocketry.entity.EntityUIStar;
@@ -23,6 +24,7 @@ public class AdvancedRocketryEntities {
 	public static EntityType<EntityLaserNode> ENTITY_LASER_NODE;  //this.setSize(0.25F, 0.25F);
 	
 	public static EntityType<EntityRocket> ENTITY_ROCKET;  //this.setSize(0.25F, 0.25F);
+	public static EntityType<EntityStationDeployedRocket> ENTITY_DEPLOYED_ROCKET;
 	public static EntityType<EntityUIPlanet> ENTITY_UIPLANET;  //this.setSize(0.25F, 0.25F);
 	public static EntityType<EntityUIStar> ENTITY_UISTAR;  //this.setSize(0.25F, 0.25F);
 	public static EntityType<EntityUIButton> ENTITY_UIBUTTON;
@@ -36,6 +38,7 @@ public class AdvancedRocketryEntities {
 		ENTITY_ITEM_ABDUCTED = EntityType.Builder.<EntityItemAbducted>create(EntityItemAbducted::new, EntityClassification.MISC).size(0.25F, 0.25F).setTrackingRange(127).setShouldReceiveVelocityUpdates(true).setUpdateInterval(400).build("itemabducted");
 		ENTITY_LASER_NODE = EntityType.Builder.<EntityLaserNode>create(EntityLaserNode::new, EntityClassification.MISC).size(0.25F, 0.25F).setTrackingRange(256).setUpdateInterval(20).build("lasernode");
 		ENTITY_ROCKET = EntityType.Builder.<EntityRocket>create(EntityRocket::new, EntityClassification.MISC).size(0.25F, 0.25F).setTrackingRange(256).setUpdateInterval(3).build("rocket");
+		ENTITY_DEPLOYED_ROCKET = EntityType.Builder.<EntityStationDeployedRocket>create(EntityStationDeployedRocket::new, EntityClassification.MISC).size(0.25F, 0.25F).setTrackingRange(256).setShouldReceiveVelocityUpdates(true).setUpdateInterval(600).build("deployedrocket");
 		ENTITY_UIPLANET = EntityType.Builder.<EntityUIPlanet>create(EntityUIPlanet::new, EntityClassification.MISC).size(0.25F, 0.25F).setTrackingRange(64).setUpdateInterval(20).build("uiplanet");
 		ENTITY_UISTAR = EntityType.Builder.<EntityUIStar>create(EntityUIStar::new, EntityClassification.MISC).size(0.25F, 0.25F).setTrackingRange(64).setUpdateInterval(20).build("uistar");
 		ENTITY_UIBUTTON = EntityType.Builder.<EntityUIButton>create(EntityUIButton::new, EntityClassification.MISC).size(0.25F, 0.25F).setTrackingRange(64).setUpdateInterval(20).build("uibutton");
@@ -47,6 +50,7 @@ public class AdvancedRocketryEntities {
 				ENTITY_ITEM_ABDUCTED.setRegistryName(Constants.modId, "itemabducted"),
 				ENTITY_LASER_NODE.setRegistryName(Constants.modId, "lasernode"),
 				ENTITY_ROCKET.setRegistryName(Constants.modId, "rocket"),
+				ENTITY_DEPLOYED_ROCKET.setRegistryName(Constants.modId, "deployedrocket"),
 				ENTITY_UIPLANET.setRegistryName(Constants.modId, "uiplanet"),
 				ENTITY_UISTAR.setRegistryName(Constants.modId, "uistar"),
 				ENTITY_UIBUTTON.setRegistryName(Constants.modId, "uibutton"));

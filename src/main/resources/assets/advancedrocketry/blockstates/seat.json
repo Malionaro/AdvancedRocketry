@@ -4,7 +4,6 @@
         "transform": "forge:default-block"
     },
     "variants": {
-	"inventory": { "model": "advancedrocketry:block/seat"},
         "": { "model": "advancedrocketry:block/seat" }
     }
 }

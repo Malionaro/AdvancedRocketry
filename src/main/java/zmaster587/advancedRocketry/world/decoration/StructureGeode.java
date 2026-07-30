@@ -28,6 +28,10 @@ public class StructureGeode  extends Structure<ProbabilityConfig>  {
 		}
 
 		public void func_230364_a_(DynamicRegistries p_230364_1_, ChunkGenerator p_230364_2_, TemplateManager p_230364_3_, int p_230364_4_, int p_230364_5_, Biome p_230364_6_, ProbabilityConfig p_230364_7_) {
+			Biome.Category category = p_230364_6_.getCategory();
+			if(category == Biome.Category.OCEAN || category == Biome.Category.RIVER || category == Biome.Category.BEACH)
+				return;
+
 			StructurePieceGeode geodePiece = new StructurePieceGeode(this.rand, p_230364_4_ * 16, p_230364_5_ * 16);
 			this.components.add(geodePiece);
 			this.recalculateStructureSize();

@@ -19,31 +19,38 @@ import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
 import zmaster587.libVulpes.util.ZUtils;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class StructurePieceGeode extends ScatteredStructurePiece {
 	int radius;
 	int xCenter, zCenter;
 
-	private static List<BlockState> ores;
-
 	public static void init() {
-		if(ores == null) {
-			ores = new LinkedList<>();
-			IntStream.range(0, ARConfiguration.getCurrentConfig().standardGeodeOres.size()).forEach(i -> ores.add(ARConfiguration.getCurrentConfig().standardGeodeOres.get(i).getDefaultState()));
-		}
+		// Kept as a compatibility entry point. Ore lists are now assembled per
+		// generation call so config reloads and dimension overrides stay local.
 	}
 	
 	public StructurePieceGeode(Random random, int x, int z) {
-		super(AdvancedRocketryBiomes.STRUCTURE_PIECE_GEODE, random, x, 64, z, 128, 15, 128);
+		this(random, x, z, chooseRadius(random));
+	}
+
+	private StructurePieceGeode(Random random, int x, int z, int radius) {
+		super(AdvancedRocketryBiomes.STRUCTURE_PIECE_GEODE, random, x, 64, z,
+				radius * 2 + 1, Math.max(15, radius + 1), radius * 2 + 1);
 		this.setCoordBaseMode(null);
-		radius = random.nextInt(ARConfiguration.getCurrentConfig().geodeVariation.get()) + ARConfiguration.getCurrentConfig().geodeBaseSize.get() - (ARConfiguration.getCurrentConfig().geodeVariation.get()/2); //24; 24 -> 48
+		this.radius = radius;
 		xCenter = x;
 		zCenter = z;
+	}
+
+	private static int chooseRadius(Random random) {
+		int variation = Math.max(0, ARConfiguration.getCurrentConfig().geodeVariation.get());
+		int radius = ARConfiguration.getCurrentConfig().geodeBaseSize.get() - variation / 2;
+		if(variation > 0)
+			radius += random.nextInt(variation);
+		return Math.max(4, radius);
 	}
 
     public StructurePieceGeode(TemplateManager mgr, CompoundNBT piece) {
@@ -74,11 +81,18 @@ public class StructurePieceGeode extends ScatteredStructurePiece {
 		int zCoord =  (chunkZ << 4) - zCenter - radius;
 
 		DimensionProperties props = DimensionManager.getInstance().getDimensionProperties(ZUtils.getDimensionIdentifier(world.getWorld()));
-		ores.addAll(
-				props.geodeOres.stream()
-						.map(s-> Block.getBlockFromItem(s.getItem()).getDefaultState())
-						.collect(Collectors.toList())
-		);
+		List<BlockState> ores = new ArrayList<>();
+		for(Block block : ARConfiguration.getCurrentConfig().standardGeodeOres) {
+			BlockState state = block.getDefaultState();
+			if(!ores.contains(state))
+				ores.add(state);
+		}
+		for(net.minecraft.item.ItemStack stack : props.geodeOres) {
+			BlockState state = Block.getBlockFromItem(stack.getItem()).getDefaultState();
+			if(state.getBlock() != Blocks.AIR && !ores.contains(state))
+				ores.add(state);
+		}
+		BlockState fallbackOre = ores.isEmpty() ? Blocks.STONE.getDefaultState() : null;
 
 		int avgY = 64;
 
@@ -106,8 +120,9 @@ public class StructurePieceGeode extends ScatteredStructurePiece {
 
 						//Generates ore hanging from the ceiling
 						if( relx % 4 > 0 && relz % 4 > 0) {
+							BlockState ore = fallbackOre == null ? ores.get((relx/4 + relz/4) % ores.size()) : fallbackOre;
 							for(int i = 1; i < size; i++)
-								setBlockState(world, ores.get((relx/4 + relz/4) % ores.size()), x, avgY + count - i, z, bb);
+								setBlockState(world, ore, x, avgY + count - i, z, bb);
 						}
 						else {
 							size -=2;
@@ -118,8 +133,9 @@ public class StructurePieceGeode extends ScatteredStructurePiece {
 
 						//Generates ore in the floor
 						if( (relx+2) % 4 > 0 && (relz+2) % 4 > 0) {
+							BlockState ore = fallbackOre == null ? ores.get((relx/4 + relz/4) % ores.size()) : fallbackOre;
 							for(int i = 1; i < size; i++)
-								setBlockState(world, ores.get((relx/4 + relz/4) % ores.size()), x, avgY - count + i, z, bb);
+								setBlockState(world, ore, x, avgY - count + i, z, bb);
 						}
 
 					}

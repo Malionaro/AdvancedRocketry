@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/warpcontroller" },
         "facing=south,state=true": { "model": "advancedrocketry:block/warpcontroller", "y": 180 },
         "facing=west,state=true":  { "model": "advancedrocketry:block/warpcontroller", "y": 270 },
-        "facing=east,state=true":  { "model": "advancedrocketry:block/warpcontroller", "y": 90 },
-        "inventory" : { "model": "advancedrocketry:block/warpcontroller" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/warpcontroller", "y": 90 }
     }
 }

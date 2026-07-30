@@ -40,12 +40,18 @@ public class NBTStorableListList {
 		for(int i = 0; i < list.size(); i++) {
 			CompoundNBT nbttag = list.getCompound(i);
 			int[] tag = nbttag.getIntArray("loc");
-			ResourceLocation dimid = new ResourceLocation(nbttag.getString("dim"));
+			if (tag.length < 3)
+				continue;
+
+			ResourceLocation dimid = LegacyDimensionIdMigration.read(nbttag, "dim");
+
+			if (dimid == null)
+				continue;
 			
 			pos.add(new DimensionBlockPosition(dimid, new HashedBlockPosition(tag[0], tag[1], tag[2])));
 		}
 	}
-	
+
 	public List<DimensionBlockPosition> getList() {
 		return pos;
 	}

@@ -12,12 +12,12 @@
             "item": "advancedrocketry:structuretower"
         },
         "p": {
-            "item": "advancedrocketry:solarpanel"
+            "item": "advancedrocketry:basicsolarpanel"
         }
     },
     "result":
     {
-        "item": "advancedrocketry:solararraypanel",
+        "item": "advancedrocketry:solarpanel",
         "count": 8
     }
 }

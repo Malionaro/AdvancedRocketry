@@ -57,7 +57,7 @@ minecraft {
     // These can be tweaked, removed, or duplicated as needed.
     runs {
         client {
-            workingDirectory project.file('run')
+            workingDirectory project.file(findProperty('arRunDir') ?: 'run')
 
             // Recommended logging data for a userdev environment
             // The markers can be changed as needed. 
@@ -79,7 +79,7 @@ minecraft {
         }
 
         server {
-            workingDirectory project.file('run')
+            workingDirectory project.file(findProperty('arRunDir') ?: 'run')
 
             // Recommended logging data for a userdev environment
             // The markers can be changed as needed. 
@@ -101,7 +101,7 @@ minecraft {
         }
 
         data {
-            workingDirectory project.file('run')
+            workingDirectory project.file(findProperty('arRunDir') ?: 'run')
 
             // Recommended logging data for a userdev environment
             // The markers can be changed as needed. 
@@ -124,6 +124,7 @@ minecraft {
                 }
             }
         }
+
     }
 }
 
@@ -134,19 +135,6 @@ repositories {
     maven {
             name = "mezz.jei"
             url = "https://dvs1.progwml6.com/files/maven"
-        }
-    ivy {
-        url "http://65.78.115.159:8080/"
-        layout 'pattern', {
-            artifact "/job/LibVulpes/job/libVulpes/job/1.16.5/" + project.libVulpesBuildNum +"/artifact/output/[module]-[revision].[ext]"
-        }
-        metadataSources {
-            artifact()
-        }
-    }
-    ivy {
-            name "industrialcraft-2"
-            artifactPattern "http://jenkins.ic2.player.to/job/IC2_111/39/artifact/build/libs/[module]-[revision].[ext]"
         }
     /*ivy {
             name "Tesla"
@@ -169,7 +157,7 @@ dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.16.5-36.1.0'
+    minecraft 'net.minecraftforge:forge:1.16.5-36.2.39'
 
     // You may put jars on which you depend on in ./libs or you may define them like so..
     // compile "some.group:artifact:version:classifier"
@@ -192,7 +180,7 @@ dependencies {
     //compile name: 'industrialcraft-2', version: '2.7.39-ex111-api', ext: 'jar'
     //compile name: 'Tesla', version: '1.11-1.3.0.51-deobf', ext: 'jar'
     //compile name: 'EnderIO', version: '1.7.10-2.2.8.381', ext: 'jar'
-    compile name: 'LibVulpes', version: '1.16.5-' + project.libVulpesVersion  + '-' + project.libVulpesBuildNum + '-deobf', ext: 'jar'
+    implementation "zmaster587.libVulpes:libVulpes:1.0.2"
 	//compile name: 'LibVulpes', version: '1.16.5-' + project.libVulpesVersion  + '-deobf', ext: 'jar'
     //compile name: 'GalacticraftCore', version: '1.12.2-4.0.1.174', ext: 'jar'
 

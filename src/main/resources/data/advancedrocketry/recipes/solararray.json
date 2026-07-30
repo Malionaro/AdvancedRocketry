@@ -1,25 +1,22 @@
 {
     "type": "minecraft:crafting_shaped",
     "pattern": [
-	    "ggg",
-	    "tbc",
-	    "aca"
+	    "rur",
+	    "gbg",
+	    "rrr"
     ],
     "key": {
         "g": {
-            "item": "advancedrocketry:siliconwafer"
+            "tag": "forge:glass_panes"
         },
-        "t": {
-            "item": "advancedrocketry:trackingcircuit"
-        },
-        "c": {
-            "item": "advancedrocketry:controlcircuit"
+        "u": {
+            "item": "advancedrocketry:userinterface"
         },
 	    "b": {
             "item": "libvulpes:machinestructure"
         },
-        "a": {
-            "item": "advancedrocketry:basiccircuit"
+        "r": {
+            "tag": "forge:rods/iron"
         }
     },
     "result": {

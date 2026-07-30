@@ -11,7 +11,6 @@
         "extended=true,facing=north": { "model": "advancedrocketry:block/smallplatepress" },
         "extended=true,facing=south": { "model": "advancedrocketry:block/smallplatepress", "y": 180 },
         "extended=true,facing=west": { "model": "advancedrocketry:block/smallplatepress", "y": 270 },
-        "extended=true,facing=east": { "model": "advancedrocketry:block/smallplatepress", "y": 90 },
-        "inventory": { "model": "advancedrocketry:block/smallplatepress", "x": 180 }
+        "extended=true,facing=east": { "model": "advancedrocketry:block/smallplatepress", "y": 90 }
     }
 }

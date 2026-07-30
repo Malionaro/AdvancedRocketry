@@ -55,7 +55,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import zmaster587.advancedRocketry.dimension.DimensionProperties.Temps;
@@ -69,6 +68,7 @@ import zmaster587.advancedRocketry.world.decoration.MapGenSwampTree;
 import zmaster587.advancedRocketry.world.decoration.StructurePieceVolcano;
 import zmaster587.advancedRocketry.world.decoration.StructureVolcano;
 import zmaster587.advancedRocketry.world.decoration.StructureCrater;
+import zmaster587.advancedRocketry.world.decoration.StructureCrater.CraterType;
 import zmaster587.advancedRocketry.world.decoration.StructureGeode;
 import zmaster587.advancedRocketry.world.gen.WorldGenAlienTree;
 import zmaster587.advancedRocketry.world.gen.WorldGenCharredTree;
@@ -91,14 +91,14 @@ public class AdvancedRocketryBiomes {
 	public static IStructurePieceType STRUCTURE_PIECE_GEODE;
 	// Biome Providers
 	static {
-		Registry.register(Registry.BIOME_PROVIDER_CODEC, "planetary", CustomPlanetBiomeProvider.customPlanetCodec);
-		Registry.register(Registry.CHUNK_GENERATOR_CODEC, "planetary_noise", ChunkProviderPlanet.planetCodec);
-		Registry.register(Registry.CHUNK_GENERATOR_CODEC, "space", ChunkProviderSpace.planetCodec);
+		Registry.register(Registry.BIOME_PROVIDER_CODEC, new ResourceLocation(Constants.modId, "planetary"), CustomPlanetBiomeProvider.customPlanetCodec);
+		Registry.register(Registry.CHUNK_GENERATOR_CODEC, new ResourceLocation(Constants.modId, "planetary_noise"), ChunkProviderPlanet.planetCodec);
+		Registry.register(Registry.CHUNK_GENERATOR_CODEC, new ResourceLocation(Constants.modId, "space"), ChunkProviderSpace.planetCodec);
 		
 		
-		STRUCTURE_PIECE_CRATER = Registry.register(Registry.STRUCTURE_PIECE, "craterpiece".toLowerCase(Locale.ROOT), StructurePieceCrater::new);
-		STRUCTURE_PIECE_VOLCANO = Registry.register(Registry.STRUCTURE_PIECE, "volcanopiece".toLowerCase(Locale.ROOT), StructurePieceVolcano::new);
-		STRUCTURE_PIECE_GEODE = Registry.register(Registry.STRUCTURE_PIECE, "geodePiece".toLowerCase(Locale.ROOT), StructurePieceGeode::new);
+		STRUCTURE_PIECE_CRATER = Registry.register(Registry.STRUCTURE_PIECE, new ResourceLocation(Constants.modId, "craterpiece"), StructurePieceCrater::new);
+		STRUCTURE_PIECE_VOLCANO = Registry.register(Registry.STRUCTURE_PIECE, new ResourceLocation(Constants.modId, "volcanopiece"), StructurePieceVolcano::new);
+		STRUCTURE_PIECE_GEODE = Registry.register(Registry.STRUCTURE_PIECE, new ResourceLocation(Constants.modId, "geodepiece"), StructurePieceGeode::new);
 	}
 	
 	
@@ -126,21 +126,29 @@ public class AdvancedRocketryBiomes {
 	// End surface Builder config
 
 	// Structure features
-	public static Structure<ProbabilityConfig> CRATER = new StructureCrater(ProbabilityConfig.CODEC);
+	public static Structure<ProbabilityConfig> CRATER_SMALL = new StructureCrater(ProbabilityConfig.CODEC, CraterType.SMALL);
+	public static Structure<ProbabilityConfig> CRATER = new StructureCrater(ProbabilityConfig.CODEC, CraterType.NORMAL);
+	public static Structure<ProbabilityConfig> CRATER_HUGE = new StructureCrater(ProbabilityConfig.CODEC, CraterType.HUGE);
 	public static Structure<ProbabilityConfig> VOLCANO = new StructureVolcano(ProbabilityConfig.CODEC);
 	public static Structure<ProbabilityConfig> GEODE = new StructureGeode(ProbabilityConfig.CODEC);
+	public static StructureFeature<ProbabilityConfig, ? extends Structure<ProbabilityConfig>> CONFIGURED_CRATER_SMALL = CRATER_SMALL.withConfiguration(new ProbabilityConfig(0.0000001F));
 	public static StructureFeature<ProbabilityConfig, ? extends Structure<ProbabilityConfig>> CONFIGURED_CRATER = CRATER.withConfiguration(new ProbabilityConfig(0.0000001F));
+	public static StructureFeature<ProbabilityConfig, ? extends Structure<ProbabilityConfig>> CONFIGURED_CRATER_HUGE = CRATER_HUGE.withConfiguration(new ProbabilityConfig(0.0000001F));
 	public static StructureFeature<ProbabilityConfig, ? extends Structure<ProbabilityConfig>> CONFIGURED_VOLCANO = VOLCANO.withConfiguration(new ProbabilityConfig(0.0000001F));
 	public static StructureFeature<ProbabilityConfig, ? extends Structure<ProbabilityConfig>> CONFIGURED_GEODE = GEODE.withConfiguration(new ProbabilityConfig(0.0000001F));
 	
 	public static void registerStructures(RegistryEvent.Register<Structure<?>> evt) {
-		evt.getRegistry().register(VOLCANO.setRegistryName("volcano"));
-		evt.getRegistry().register(CRATER.setRegistryName("crater"));
-		evt.getRegistry().register(GEODE.setRegistryName("geode"));
+		evt.getRegistry().register(VOLCANO.setRegistryName(Constants.modId, "volcano"));
+		evt.getRegistry().register(CRATER_SMALL.setRegistryName(Constants.modId, "crater_small"));
+		evt.getRegistry().register(CRATER.setRegistryName(Constants.modId, "crater"));
+		evt.getRegistry().register(CRATER_HUGE.setRegistryName(Constants.modId, "crater_huge"));
+		evt.getRegistry().register(GEODE.setRegistryName(Constants.modId, "geode"));
 		
-		Structure.NAME_STRUCTURE_BIMAP.put("volcano", VOLCANO);
-	    Structure.NAME_STRUCTURE_BIMAP.put("crater", CRATER);
-	    Structure.NAME_STRUCTURE_BIMAP.put("geode", GEODE);
+		Structure.NAME_STRUCTURE_BIMAP.put(Constants.modId + ":volcano", VOLCANO);
+		Structure.NAME_STRUCTURE_BIMAP.put(Constants.modId + ":crater_small", CRATER_SMALL);
+	    Structure.NAME_STRUCTURE_BIMAP.put(Constants.modId + ":crater", CRATER);
+		Structure.NAME_STRUCTURE_BIMAP.put(Constants.modId + ":crater_huge", CRATER_HUGE);
+	    Structure.NAME_STRUCTURE_BIMAP.put(Constants.modId + ":geode", GEODE);
 	    
 	    Field decorationStageField = ObfuscationReflectionHelper.findField(Structure.class, "field_236385_u_");
 	    decorationStageField.setAccessible(true);
@@ -150,16 +158,20 @@ public class AdvancedRocketryBiomes {
 			decoractionStage = (Map<Structure<?>, GenerationStage.Decoration>)decorationStageField.get(null);
 			
 		    decoractionStage.put(VOLCANO, GenerationStage.Decoration.LOCAL_MODIFICATIONS);
+		    decoractionStage.put(CRATER_SMALL, GenerationStage.Decoration.LOCAL_MODIFICATIONS);
 		    decoractionStage.put(CRATER, GenerationStage.Decoration.LOCAL_MODIFICATIONS);
+		    decoractionStage.put(CRATER_HUGE, GenerationStage.Decoration.LOCAL_MODIFICATIONS);
 		    decoractionStage.put(GEODE, GenerationStage.Decoration.LOCAL_MODIFICATIONS);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
 
 
-		WorldGenRegistries.register(WorldGenRegistries.CONFIGURED_STRUCTURE_FEATURE, "volcano", CONFIGURED_VOLCANO);
-		WorldGenRegistries.register(WorldGenRegistries.CONFIGURED_STRUCTURE_FEATURE, "crater", CONFIGURED_CRATER);
-		WorldGenRegistries.register(WorldGenRegistries.CONFIGURED_STRUCTURE_FEATURE, "geode", CONFIGURED_GEODE);
+		WorldGenRegistries.register(WorldGenRegistries.CONFIGURED_STRUCTURE_FEATURE, new ResourceLocation(Constants.modId, "volcano"), CONFIGURED_VOLCANO);
+		WorldGenRegistries.register(WorldGenRegistries.CONFIGURED_STRUCTURE_FEATURE, new ResourceLocation(Constants.modId, "crater_small"), CONFIGURED_CRATER_SMALL);
+		WorldGenRegistries.register(WorldGenRegistries.CONFIGURED_STRUCTURE_FEATURE, new ResourceLocation(Constants.modId, "crater"), CONFIGURED_CRATER);
+		WorldGenRegistries.register(WorldGenRegistries.CONFIGURED_STRUCTURE_FEATURE, new ResourceLocation(Constants.modId, "crater_huge"), CONFIGURED_CRATER_HUGE);
+		WorldGenRegistries.register(WorldGenRegistries.CONFIGURED_STRUCTURE_FEATURE, new ResourceLocation(Constants.modId, "geode"), CONFIGURED_GEODE);
 	}
 	
 	   
@@ -237,8 +249,8 @@ public class AdvancedRocketryBiomes {
 		genSwamp = swampBuilder.build();
 		
 		genOceanSpires = createBuilder(GRAVEL_CONFIG, false).withCarver(Carving.AIR, CONFIGURED_INVERTED_PILLAR).build();
-		genVolcanicBasalt = createBuilder(BASALT_CONFIG, false).withStructure(CONFIGURED_VOLCANO).withFeature(Decoration.VEGETAL_DECORATION, CHARRED_TREE).build();
-		genVolcanicBasaltBarren = createBuilder(BASALT_CONFIG, false).withStructure(CONFIGURED_VOLCANO).build();
+		genVolcanicBasalt = createBuilder(BASALT_CONFIG, false).withFeature(Decoration.VEGETAL_DECORATION, CHARRED_TREE).build();
+		genVolcanicBasaltBarren = createBuilder(BASALT_CONFIG, false).build();
 		
 	}
 

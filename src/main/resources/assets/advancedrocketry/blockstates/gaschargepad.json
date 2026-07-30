@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/gaschargepad" },
         "facing=south,state=true": { "model": "advancedrocketry:block/gaschargepad", "y": 180 },
         "facing=west,state=true":  { "model": "advancedrocketry:block/gaschargepad", "y": 270 },
-        "facing=east,state=true":  { "model": "advancedrocketry:block/gaschargepad", "y": 90 },
-        "inventory" : { "model": "advancedrocketry:block/gaschargepad" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/gaschargepad", "y": 90 }
     }
 }

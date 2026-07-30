@@ -94,6 +94,7 @@ public class XMLPlanetLoader {
 	private static final String ELEMENT_GEODE_ORES = "geodeOres";
 	private static final String ELEMENT_CRATER_ORES = "craterOres";
 	private static final String ELEMENT_BIOMEIDS = "biomeIds";
+	private static final String ELEMENT_CRATER_BIOMEIDS = "craterBiomeWeights";
 	private static final String ELEMENT_ARTIFACT = "artifact";
 	private static final String ELEMENT_OCEANBLOCK = "oceanBlock";
 	private static final String ELEMENT_FILLERBLOCK = "fillerBlock";
@@ -383,6 +384,25 @@ public class XMLPlanetLoader {
 							AdvancedRocketry.logger.warn(s + " is not a valid biome id or name"); //TODO: more detailed error msg
 						}
 					}
+				}
+			} else if(planetPropertyNode.getNodeName().equalsIgnoreCase(ELEMENT_CRATER_BIOMEIDS)) {
+				for(String entry : planetPropertyNode.getTextContent().split(",")) {
+					String[] biomeAndWeight = entry.trim().split(";");
+					ResourceLocation biomeId = ResourceLocation.tryCreate(biomeAndWeight[0].trim());
+					int weight = 100;
+					if(biomeAndWeight.length > 1) {
+						try {
+							weight = Integer.parseInt(biomeAndWeight[1].trim());
+						}
+						catch(NumberFormatException e) {
+							AdvancedRocketry.logger.warn("Invalid crater biome weight '{}'", entry);
+						}
+					}
+
+					if(biomeId != null && AdvancedRocketryBiomes.doesBiomeExist(biomeId))
+						properties.addCraterBiomeWeight(biomeId, weight);
+					else
+						AdvancedRocketry.logger.warn("Invalid crater biome '{}'", biomeAndWeight[0]);
 				}
 			} else if(planetPropertyNode.getNodeName().equalsIgnoreCase(ELEMENT_SPAWNABLE)) {
 				int weight = 100;
@@ -932,6 +952,13 @@ public class XMLPlanetLoader {
 			else
 				AdvancedRocketry.logger.warn("Dim " + properties.getId() + " has no biomes to save!");
 			nodePlanet.appendChild(createTextNode(doc, ELEMENT_BIOMEIDS, biomeIds));
+		}
+
+		if(!properties.getCraterBiomeWeights().isEmpty() && !properties.isGasGiant()) {
+			List<String> craterBiomes = new ArrayList<>();
+			for(DimensionProperties.CraterBiomeWeight entry : properties.getCraterBiomeWeights())
+				craterBiomes.add(entry.getBiomeId() + ";" + entry.getWeight());
+			nodePlanet.appendChild(createTextNode(doc, ELEMENT_CRATER_BIOMEIDS, String.join(",", craterBiomes)));
 		}
 
 		for(ItemStack stack : properties.getRequiredArtifacts()) {

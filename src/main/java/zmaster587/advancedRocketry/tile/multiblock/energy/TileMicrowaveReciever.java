@@ -42,7 +42,7 @@ import java.util.List;
 
 public class TileMicrowaveReciever extends TileMultiPowerProducer {
 
-	static final Block solarGenerator = AdvancedRocketryBlocks.blockSolarArrayPanel;
+	static final Block solarGenerator = AdvancedRocketryBlocks.blockSolarPanel;
 	static final Object[][][] structure = new Object[][][] {
 		{
 			{solarGenerator, '*', '*', '*', solarGenerator},

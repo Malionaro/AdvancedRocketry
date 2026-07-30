@@ -7,7 +7,6 @@
         "facing=north,state=true": { "model": "advancedrocketry:block/satelliteassembler" },
         "facing=south,state=true": { "model": "advancedrocketry:block/satelliteassembler", "y": 180 },
         "facing=west,state=true":  { "model": "advancedrocketry:block/satelliteassembler", "y": 270 },
-        "facing=east,state=true":  { "model": "advancedrocketry:block/satelliteassembler", "y": 90 },
-        "inventory" : { "model": "advancedrocketry:block/satelliteassembler" }
+        "facing=east,state=true":  { "model": "advancedrocketry:block/satelliteassembler", "y": 90 }
     }
 }

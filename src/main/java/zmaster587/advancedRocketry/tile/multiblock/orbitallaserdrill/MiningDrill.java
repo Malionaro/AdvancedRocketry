@@ -21,6 +21,7 @@ class MiningDrill extends AbstractDrill {
 
 	private EntityLaserNode laser;
 	private Vector3i ticketLaser;
+	private ServerWorld ticketWorld;
 	protected boolean finished;
 
 	MiningDrill() {
@@ -45,7 +46,7 @@ class MiningDrill extends AbstractDrill {
 				continue;
 
 			if (state.getMaterial().isReplaceable() || state.getMaterial().isLiquid()) {
-				laser.world.setBlockState(laserPos, Blocks.AIR.getDefaultState());
+				laser.world.setBlockState(laserPos, AdvancedRocketryBlocks.blockLightSource.getDefaultState());
 				continue;
 			}
 
@@ -57,14 +58,14 @@ class MiningDrill extends AbstractDrill {
 
 
 			if (items.isEmpty()) {
-				laser.world.setBlockState(laserPos, Blocks.AIR.getDefaultState());
+				laser.world.setBlockState(laserPos, AdvancedRocketryBlocks.blockLightSource.getDefaultState());
 				continue;
 			}
 
 			stacks = new ItemStack[items.size()];
 			stacks = items.toArray(stacks);
 
-			laser.world.setBlockState(laserPos, Blocks.AIR.getDefaultState());
+			laser.world.setBlockState(laserPos, AdvancedRocketryBlocks.blockLightSource.getDefaultState());
 		}
 
 		boolean blockInWay = false;
@@ -106,6 +107,7 @@ class MiningDrill extends AbstractDrill {
 	boolean activate(World world, int x, int z) {
 		
 		ServerWorld worldServer = (ServerWorld)world;
+		ticketWorld = worldServer;
 		ticketLaser = new Vector3i(x>> 4, 0, z >> 4);
 		worldServer.forceChunk(x >> 4, z >> 4, true);
 
@@ -138,11 +140,11 @@ class MiningDrill extends AbstractDrill {
 			laser = null;
 		}
 
-		if(ticketLaser != null)
+		if(ticketLaser != null && ticketWorld != null)
 		{
-			ServerWorld worldServer = (ServerWorld)laser.getEntityWorld();
-			worldServer.forceChunk(ticketLaser.getX(), ticketLaser.getZ(), true);
+			ticketWorld.forceChunk(ticketLaser.getX(), ticketLaser.getZ(), false);
 			ticketLaser = null;
+			ticketWorld = null;
 		}
 
 		finished = false;

@@ -449,7 +449,8 @@ public class TileOrbitalLaserDrill extends TileMultiblockMachine implements ISid
 	}
 
 	private boolean unableToRun() {
-		return lens.isEmpty() || !canMachineSeeEarth() 
+		return !ARConfiguration.getCurrentConfig().enableLaserDrill.get()
+				|| lens.isEmpty() || !canMachineSeeEarth()
 				|| batteries.getUniversalEnergyStored() == 0 
 				|| ZUtils.getDimensionIdentifier(world).equals(DimensionManager.spaceId)
 				|| !DimensionManager.getInstance().canTravelTo(DimensionManager.getInstance().getDimensionProperties(world, getPos()).getParentPlanet()) 
@@ -580,7 +581,7 @@ public class TileOrbitalLaserDrill extends TileMultiblockMachine implements ISid
 	@Override
 	public boolean isItemValidForSlot(int i, @Nonnull ItemStack itemstack) {
 		if(i == 0)
-			return AdvancedRocketryItems.itemLensBlock == itemstack.getItem();
+			return AdvancedRocketryItems.itemLens == itemstack.getItem();
 
 		return inv.isItemValidForSlot(i, itemstack);
 	}

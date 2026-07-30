@@ -12,11 +12,10 @@ public class ARAdvancements {
 	public static final ResourceLocation BEER = new ResourceLocation("advancedrocketry", "normal/beer");
 	public static final ResourceLocation WENT_TO_THE_MOON = new ResourceLocation("advancedrocketry", "normal/wenttothemoon");
 	public static final ResourceLocation ALL_SHE_GOT = new ResourceLocation("advancedrocketry", "normal/givingitallshesgot");
-	public static final ResourceLocation PHOENIX_FLIGHT = new ResourceLocation("advancedrocketry", "normal/flightofpheonix");
+	public static final ResourceLocation PHOENIX_FLIGHT = new ResourceLocation("advancedrocketry", "normal/flightofthephoenix");
 	
 	public static void triggerAdvancement(ResourceLocation name, ServerPlayerEntity player) {
 		Advancement advancement = ServerLifecycleHooks.getCurrentServer().getAdvancementManager().getAdvancement(name);
-		System.out.println(true);
 		if(advancement != null) {
 
 			for (String str : advancement.getCriteria().keySet())

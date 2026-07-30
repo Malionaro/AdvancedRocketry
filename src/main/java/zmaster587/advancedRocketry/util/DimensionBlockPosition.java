@@ -3,6 +3,8 @@ package zmaster587.advancedRocketry.util;
 import net.minecraft.util.ResourceLocation;
 import zmaster587.libVulpes.util.HashedBlockPosition;
 
+import java.util.Objects;
+
 public class DimensionBlockPosition {
 	public HashedBlockPosition pos;
 	public ResourceLocation dimid;
@@ -29,7 +31,8 @@ public class DimensionBlockPosition {
 		
 		boolean flag = pos == null && ((DimensionBlockPosition)arg0).pos == null;
 		
-		return dimid == ((DimensionBlockPosition)arg0).dimid && (flag || ((DimensionBlockPosition)arg0).pos.equals(pos));
+		return Objects.equals(dimid, ((DimensionBlockPosition)arg0).dimid)
+				&& (flag || ((DimensionBlockPosition)arg0).pos.equals(pos));
 	}
 	
 	@Override

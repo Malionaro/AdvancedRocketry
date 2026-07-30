@@ -18,8 +18,8 @@
 		"f": {
             "tag": "forge:fans/steel"
         },
-		"p": {
-            "tag": "forge:plates/aluminum"
+	    "p": {
+            "tag": "forge:plates/tin"
         }
     },
     "result": {

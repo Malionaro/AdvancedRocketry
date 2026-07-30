@@ -1,0 +1,13 @@
+{
+    "type": "minecraft:crafting_shapeless",
+    "ingredients": [
+        {
+            "item": "libvulpes:forge_power_input"
+	    }
+    ],
+    "result": {
+        "item": "libvulpes:forge_power_output",
+        "count": 1
+    }
+}
+

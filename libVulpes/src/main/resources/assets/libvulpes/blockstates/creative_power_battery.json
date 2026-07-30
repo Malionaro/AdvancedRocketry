@@ -1,0 +1,6 @@
+{
+    "variants": {
+        "visible=true": { "model": "libvulpes:block/creativepowerbattery" },
+        "visible=false": { "model": "libvulpes:block/creativepowerbattery" }
+    }
+}

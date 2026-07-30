@@ -13,11 +13,11 @@
             "tag": "forge:plates/iron"
         },
 		"b": {
-            "item": "advancedrocketry:sawblade"
+            "item": "advancedrocketry:sawbladeiron"
         }
     },
     "result": {
-        "item": "advancedrocketry:sawbladeassembly",
+        "item": "advancedrocketry:sawblade",
         "count": 1
     }
 }

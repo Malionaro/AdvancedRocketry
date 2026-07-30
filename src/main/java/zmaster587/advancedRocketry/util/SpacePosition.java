@@ -3,6 +3,7 @@ package zmaster587.advancedRocketry.util;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraftforge.common.util.Constants.NBT;
 import zmaster587.advancedRocketry.api.dimension.solar.StellarBody;
 import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.dimension.DimensionProperties;
@@ -60,15 +61,14 @@ public class SpacePosition {
 		subTag.putDouble("pitch", pitch);
 		subTag.putDouble("roll", roll);
 		
-		if(subTag.contains("star"))
-			star = DimensionManager.getInstance().getStar(new ResourceLocation(subTag.getString("star")));
-		else
-			star = null;
+		ResourceLocation starId = subTag.contains("star", NBT.TAG_STRING)
+				? ResourceLocation.tryCreate(subTag.getString("star"))
+				: subTag.contains("star", NBT.TAG_ANY_NUMERIC)
+					? LegacyDimensionIdMigration.fromLegacyStarId(subTag.getInt("star")) : null;
+		star = starId == null ? null : DimensionManager.getInstance().getStar(starId);
 		
-		if(subTag.contains("world"))
-			world = DimensionManager.getInstance().getDimensionProperties(new ResourceLocation(subTag.getString("world")));
-		else
-			world = null;
+		ResourceLocation worldId = LegacyDimensionIdMigration.read(subTag, "world");
+		world = worldId == null ? null : DimensionManager.getInstance().getDimensionProperties(worldId);
 		
 		isInInterplanetarySpace = subTag.getBoolean("isInInterplanetarySpace");
 	}

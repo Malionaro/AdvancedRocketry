@@ -9,8 +9,8 @@
 	    "i": {
 	        "item": "advancedrocketry:userinterface"
         },
-	    "b": {
-	        "item": "libvulpes:batterypack"
+        "b": {
+            "item": "libvulpes:battery"
         },
 	    "e": {
 	        "item": "advancedrocketry:monopropellantrocketengine"

@@ -15,6 +15,7 @@ import zmaster587.advancedRocketry.api.IMission;
 import zmaster587.advancedRocketry.api.StatsRocket;
 import zmaster587.advancedRocketry.api.satellite.SatelliteBase;
 import zmaster587.advancedRocketry.entity.EntityRocket;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.advancedRocketry.util.StorageChunk;
 import zmaster587.libVulpes.LibVulpes;
 import zmaster587.libVulpes.util.HashedBlockPosition;
@@ -160,8 +161,12 @@ public abstract class MissionResourceCollection extends SatelliteBase implements
 
 		startWorldTime = nbt.getLong("startWorldTime");
 		duration = nbt.getLong("duration");
-		worldId = new ResourceLocation(nbt.getString("startDimid"));
-		launchDimension = new ResourceLocation(nbt.getString("launchDim"));
+		ResourceLocation loadedWorldId = LegacyDimensionIdMigration.read(nbt, "startDimid");
+		ResourceLocation loadedLaunchDimension = LegacyDimensionIdMigration.read(nbt, "launchDim");
+		if(loadedWorldId != null)
+			worldId = loadedWorldId;
+		if(loadedLaunchDimension != null)
+			launchDimension = loadedLaunchDimension;
 
 		ListNBT tagList = nbt.getList("infrastructure", 10);
 		infrastructureCoords.clear();

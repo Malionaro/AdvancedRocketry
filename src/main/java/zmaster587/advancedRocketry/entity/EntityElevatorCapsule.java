@@ -33,6 +33,7 @@ import zmaster587.advancedRocketry.dimension.DimensionManager;
 import zmaster587.advancedRocketry.event.PlanetEventHandler;
 import zmaster587.advancedRocketry.tile.multiblock.TileSpaceElevator;
 import zmaster587.advancedRocketry.util.DimensionBlockPosition;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.advancedRocketry.util.TransitionEntity;
 import zmaster587.advancedRocketry.world.util.TeleporterNoPortal;
 import zmaster587.libVulpes.LibVulpes;
@@ -114,18 +115,24 @@ public class EntityElevatorCapsule extends Entity implements INetworkEntity, IEn
 
 		if(nbt.contains("dstDimid")) {
 			dstTilePos = new DimensionBlockPosition(Constants.INVALID_PLANET, null);
-			dstTilePos.dimid = new ResourceLocation(nbt.getString("dstDimid"));
+			dstTilePos.dimid = LegacyDimensionIdMigration.read(nbt, "dstDimid");
 			int[] loc = nbt.getIntArray("dstLoc");
-			dstTilePos.pos = new HashedBlockPosition(loc[0], loc[1], loc[2]);
+			if(dstTilePos.dimid != null && loc.length >= 3)
+				dstTilePos.pos = new HashedBlockPosition(loc[0], loc[1], loc[2]);
+			else
+				dstTilePos = null;
 		}
 		else 
 			dstTilePos = null;
 
 		if(nbt.contains("srcDimid")) {
 			srcTilePos = new DimensionBlockPosition(Constants.INVALID_PLANET, null);
-			srcTilePos.dimid = new ResourceLocation(nbt.getString("srcDimid"));
+			srcTilePos.dimid = LegacyDimensionIdMigration.read(nbt, "srcDimid");
 			int[] loc = nbt.getIntArray("srcLoc");
-			srcTilePos.pos = new HashedBlockPosition(loc[0], loc[1], loc[2]);
+			if(srcTilePos.dimid != null && loc.length >= 3)
+				srcTilePos.pos = new HashedBlockPosition(loc[0], loc[1], loc[2]);
+			else
+				srcTilePos = null;
 		}
 		else 
 			srcTilePos = null;

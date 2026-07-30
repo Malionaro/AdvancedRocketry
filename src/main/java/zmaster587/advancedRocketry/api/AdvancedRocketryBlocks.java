@@ -41,6 +41,7 @@ public class AdvancedRocketryBlocks {
 	public static Block blockThermiteTorch = new TorchBlock(AbstractBlock.Properties.create(Material.MISCELLANEOUS).doesNotBlockMovement().zeroHardnessAndResistance().setLightLevel((p_235470_0_) -> 15).sound(SoundType.NETHER_BRICK), ParticleTypes.FLAME);
 	public static Block blockThermiteTorchWall = new WallTorchBlock(AbstractBlock.Properties.create(Material.MISCELLANEOUS).doesNotBlockMovement().zeroHardnessAndResistance().setLightLevel((p_235470_0_) -> 15).sound(SoundType.NETHER_BRICK), ParticleTypes.FLAME);
 	public static Block blockStationLight = new Block(AbstractBlock.Properties.create(Material.ROCK).setLightLevel((p_235470_0_) -> 15));
+	public static Block blockLegacyLoader = new BlockLegacyLoader(machineLineProperties);
 	//World Generation blocks & plants
 	public static Block blockCharcoalLog = new RotatedPillarBlock(AbstractBlock.Properties.create(Material.WOOD));
 	public static Block blockLightwoodLog = registerLog(MaterialColor.BLUE, MaterialColor.LIGHT_BLUE);
@@ -121,6 +122,7 @@ public class AdvancedRocketryBlocks {
 	public static Block blockSmallAirlockDoor = new DoorBlock(AbstractBlock.Properties.create(Material.ROCK).hardnessAndResistance(3f, 8f));
 
 	public static Block blockRocketFire = new BlockRocketFire(AbstractBlock.Properties.create(Material.FIRE, MaterialColor.TNT).doesNotBlockMovement().zeroHardnessAndResistance().setLightLevel((state) -> 15));
+	public static Block blockLightSource = new BlockLightSource();
 	public static Block blockSawBlade = new BlockMotor(machineLineProperties.notSolid().setOpaque((p_test_1_, p_test_2_, p_test_3_) -> false),1f);
 	public static Block blockQuartzCrucible = new BlockQuartzCrucible(AbstractBlock.Properties.create(Material.ROCK));
 	public static Block blockLens = new BlockAlphaTexture(AbstractBlock.Properties.create(Material.GLASS).hardnessAndResistance(0.3f).notSolid().setOpaque((p_test_1_, p_test_2_, p_test_3_) -> false));
@@ -155,6 +157,7 @@ public class AdvancedRocketryBlocks {
 	public static Block blockObservatory = new BlockMultiblockMachine(machineLineProperties, GuiHandler.guiId.MODULARNOINV);
 	public static Block blockAstrobodyDataProcessor = new BlockMultiblockMachine(machineLineProperties, GuiHandler.guiId.MODULARNOINV);
 	//Energy production
+	public static Block blockSolarPanel = new Block(machineLineProperties);
 	public static Block blockSolarGenerator = new BlockTile(machineLineProperties, GuiHandler.guiId.MODULAR);
 	public static Block blockSolarArrayPanel = new BlockSolarArrayPanel(machineLineProperties);
 	public static Block blockSolarArray = new BlockMultiblockMachine(machineLineProperties, GuiHandler.guiId.MODULAR);
@@ -182,6 +185,7 @@ public class AdvancedRocketryBlocks {
 				AdvancedRocketryBlocks.blockThermiteTorch.setRegistryName("thermitetorch"),
 				AdvancedRocketryBlocks.blockThermiteTorchWall.setRegistryName("thermitetorch_wall"),
 				AdvancedRocketryBlocks.blockStationLight.setRegistryName("stationlight"),
+				AdvancedRocketryBlocks.blockLegacyLoader.setRegistryName("loader"),
 				//World generation blocks & plants
 				AdvancedRocketryBlocks.blockCharcoalLog.setRegistryName("charcoallog"),
 				AdvancedRocketryBlocks.blockLightwoodLog.setRegistryName("lightwoodlog"),
@@ -253,9 +257,10 @@ public class AdvancedRocketryBlocks {
 				AdvancedRocketryBlocks.blockSmallAirlockDoor.setRegistryName("airlock_door"),
 
 				AdvancedRocketryBlocks.blockRocketFire.setRegistryName("rocketfire"),
+				AdvancedRocketryBlocks.blockLightSource.setRegistryName("lightsource"),
 				AdvancedRocketryBlocks.blockSawBlade.setRegistryName("sawbladeassembly"),
 				AdvancedRocketryBlocks.blockQuartzCrucible.setRegistryName("quartzcrucible"),
-				AdvancedRocketryBlocks.blockLens.setRegistryName("lens"),
+				AdvancedRocketryBlocks.blockLens.setRegistryName("blocklens"),
 				AdvancedRocketryBlocks.blockConcrete.setRegistryName("concrete"),
 				AdvancedRocketryBlocks.blockBlastBrick.setRegistryName("blastbrick"),
 				AdvancedRocketryBlocks.blockSeal.setRegistryName("seal"),
@@ -287,6 +292,7 @@ public class AdvancedRocketryBlocks {
 				AdvancedRocketryBlocks.blockObservatory.setRegistryName("observatory"),
 				AdvancedRocketryBlocks.blockAstrobodyDataProcessor.setRegistryName("astrobodydataprocessor"),
 				//Energy production
+				AdvancedRocketryBlocks.blockSolarPanel.setRegistryName("solarpanel"),
 				AdvancedRocketryBlocks.blockSolarGenerator.setRegistryName("solargenerator"),
 				AdvancedRocketryBlocks.blockSolarArrayPanel.setRegistryName("solararraypanel"),
 				AdvancedRocketryBlocks.blockSolarArray.setRegistryName("solararray"),

@@ -35,6 +35,7 @@ import zmaster587.advancedRocketry.network.PacketDimInfo;
 import zmaster587.advancedRocketry.network.PacketSatellite;
 import zmaster587.advancedRocketry.stations.SpaceObjectManager;
 import zmaster587.advancedRocketry.util.AstronomicalBodyHelper;
+import zmaster587.advancedRocketry.util.LegacyDimensionIdMigration;
 import zmaster587.advancedRocketry.util.OreGenProperties;
 import zmaster587.advancedRocketry.util.SpacePosition;
 import zmaster587.advancedRocketry.util.SpawnListEntryNBT;
@@ -255,6 +256,7 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 	//public ExtendedBiomeProperties biomeProperties;
 	private LinkedList<Biome> allowedBiomes;
 	private LinkedList<Biome> terraformedBiomes;
+	private LinkedList<CraterBiomeWeight> craterBiomeWeights;
 	private boolean isRegistered = false;
 	private boolean isTerraformed = false;
 	public boolean hasRings;
@@ -308,6 +310,7 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 		craterOres = new ArrayList<>();
 		allowedBiomes = new LinkedList<>();
 		terraformedBiomes = new LinkedList<>();
+		craterBiomeWeights = new LinkedList<>();
 		satellites = new HashMap<>();
 		requiredArtifacts = new LinkedList<>();
 		tickingSatellites = new HashMap<>();
@@ -784,11 +787,8 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 		this.atmosphereDensity = atmosphereDensity;
 
 		if (AtmosphereTypes.getAtmosphereTypeFromValue(prevAtm) != AtmosphereTypes.getAtmosphereTypeFromValue(this.atmosphereDensity)) {
-			//setTerraformedBiomes(getViableBiomes());
-			//isTerraformed = true;
-
-			//((ChunkManagerPlanet)((WorldProviderPlanet)net.minecraftforge.common.DimensionManager.getProvider(getId())).chunkMgrTerraformed).resetCache();
-
+			setTerraformedBiomes(getViableBiomes());
+			isTerraformed = true;
 		}
 
 		PacketHandler.sendToAll(new PacketDimInfo(getId(), this));
@@ -1096,6 +1096,39 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 		return terraformedBiomes;
 	}
 
+	public static final class CraterBiomeWeight {
+		private final ResourceLocation biomeId;
+		private final int weight;
+
+		public CraterBiomeWeight(ResourceLocation biomeId, int weight) {
+			this.biomeId = biomeId;
+			this.weight = MathHelper.clamp(weight, 0, 100);
+		}
+
+		public ResourceLocation getBiomeId() {
+			return biomeId;
+		}
+
+		public int getWeight() {
+			return weight;
+		}
+	}
+
+	public void addCraterBiomeWeight(Biome biome, int frequency) {
+		ResourceLocation biomeId = AdvancedRocketryBiomes.getBiomeResource(biome);
+		if(biomeId != null)
+			addCraterBiomeWeight(biomeId, frequency);
+	}
+
+	public void addCraterBiomeWeight(ResourceLocation biomeId, int frequency) {
+		craterBiomeWeights.removeIf(entry -> entry.getBiomeId().equals(biomeId));
+		craterBiomeWeights.add(new CraterBiomeWeight(biomeId, frequency));
+	}
+
+	public List<CraterBiomeWeight> getCraterBiomeWeights() {
+		return Collections.unmodifiableList(craterBiomeWeights);
+	}
+
 	/**
 	 * Used to determine if a biome is allowed to spawn on ANY planet
 	 * @param biome biome to check
@@ -1388,20 +1421,32 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 		if(nbt.contains("biomesTerra")) {
 
 			terraformedBiomes.clear();
-
-			ListNBT terraformedList = nbt.getList("biomesTerra", NBT.TAG_STRING);
 			List<Biome> biomesList = new ArrayList<>();
-
-			for(int i = 0; i < terraformedList.size(); i++) {
-				biomesList.add(AdvancedRocketryBiomes.getBiomeFromResourceLocation(new ResourceLocation(terraformedList.getString(i))));
+			if(nbt.contains("biomesTerra", NBT.TAG_LIST)) {
+				ListNBT terraformedList = nbt.getList("biomesTerra", NBT.TAG_STRING);
+				for(int i = 0; i < terraformedList.size(); i++) {
+					Biome biome = AdvancedRocketryBiomes.getBiomeFromResourceLocation(
+							ResourceLocation.tryCreate(terraformedList.getString(i)));
+					if(biome != null)
+						biomesList.add(biome);
+				}
+			}
+			else if(nbt.contains("biomesTerra", NBT.TAG_INT_ARRAY)) {
+				for(int biomeId : nbt.getIntArray("biomesTerra")) {
+					Biome biome = AdvancedRocketryBiomes.getBiomeRegistry().getByValue(biomeId);
+					if(biome != null)
+						biomesList.add(biome);
+				}
 			}
 
 			terraformedBiomes.addAll(getBiomesEntries(biomesList));
 		}
 
 		//Satellites
-		if(nbt.contains("satellites")) {
-			CompoundNBT allSatelliteNbt = nbt.getCompound("satellites");
+		String satellitesKey = nbt.contains("satellites", NBT.TAG_COMPOUND) ? "satellites"
+				: nbt.contains("satallites", NBT.TAG_COMPOUND) ? "satallites" : null;
+		if(satellitesKey != null) {
+			CompoundNBT allSatelliteNbt = nbt.getCompound(satellitesKey);
 
 			for(String keyObject : allSatelliteNbt.keySet()) {
 				String key = keyObject;
@@ -1470,16 +1515,47 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 		if(nbt.contains("biomes")) {
 
 			allowedBiomes.clear();
-			ListNBT biomeIds = nbt.getList("biomes", NBT.TAG_STRING);
 			List<Biome> biomesList = new ArrayList<>();
-
-
-			for(int i = 0; i < biomeIds.size(); i++)
-			{
-				biomesList.add(AdvancedRocketryBiomes.getBiomeFromResourceLocation(new ResourceLocation(biomeIds.getString(i))));
+			if(nbt.contains("biomes", NBT.TAG_LIST)) {
+				ListNBT biomeIds = nbt.getList("biomes", NBT.TAG_STRING);
+				for(int i = 0; i < biomeIds.size(); i++) {
+					Biome biome = AdvancedRocketryBiomes.getBiomeFromResourceLocation(
+							ResourceLocation.tryCreate(biomeIds.getString(i)));
+					if(biome != null)
+						biomesList.add(biome);
+				}
+			}
+			else if(nbt.contains("biomes", NBT.TAG_INT_ARRAY)) {
+				for(int biomeId : nbt.getIntArray("biomes")) {
+					Biome biome = AdvancedRocketryBiomes.getBiomeRegistry().getByValue(biomeId);
+					if(biome != null)
+						biomesList.add(biome);
+				}
 			}
 
 			allowedBiomes.addAll(biomesList);
+		}
+
+		if(nbt.contains("craterBiomeWeights", NBT.TAG_LIST)) {
+			craterBiomeWeights.clear();
+			ListNBT craterBiomeList = nbt.getList("craterBiomeWeights", NBT.TAG_COMPOUND);
+			for(INBT entry : craterBiomeList) {
+				CompoundNBT craterBiome = (CompoundNBT)entry;
+				ResourceLocation biomeId = ResourceLocation.tryCreate(craterBiome.getString("biome"));
+				if(biomeId != null)
+					addCraterBiomeWeight(biomeId, craterBiome.getInt("weight"));
+			}
+		}
+		else if(nbt.contains("craterBiomes", NBT.TAG_INT_ARRAY)) {
+			craterBiomeWeights.clear();
+			int[] biomeIds = nbt.getIntArray("craterBiomes");
+			int[] biomeWeights = nbt.getIntArray("craterWeights");
+			for(int i = 0; i < biomeIds.length; i++) {
+				Biome biome = AdvancedRocketryBiomes.getBiomeRegistry().getByValue(biomeIds[i]);
+				int weight = i < biomeWeights.length ? biomeWeights[i] : 30;
+				if(biome != null)
+					addCraterBiomeWeight(biome, weight);
+			}
 		}
 
 		if(nbt.contains("laserDrillOres")) {
@@ -1570,16 +1646,36 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 
 		//Hierarchy
 		if(nbt.contains("childrenPlanets")) {
-			ListNBT childList = nbt.getList("childrenPlanets", NBT.TAG_STRING);
-			for(int i = 0; i < childList.size(); i++)
-				childPlanets.add( new ResourceLocation(childList.getString(i)));
+			childPlanets.clear();
+			if(nbt.contains("childrenPlanets", NBT.TAG_LIST)) {
+				ListNBT childList = nbt.getList("childrenPlanets", NBT.TAG_STRING);
+				for(int i = 0; i < childList.size(); i++) {
+					ResourceLocation childId = ResourceLocation.tryCreate(childList.getString(i));
+					if(childId != null)
+						childPlanets.add(childId);
+				}
+			}
+			else if(nbt.contains("childrenPlanets", NBT.TAG_INT_ARRAY)) {
+				for(int childId : nbt.getIntArray("childrenPlanets"))
+					childPlanets.add(LegacyDimensionIdMigration.fromLegacyId(childId));
+			}
 		}
 
 		//Note: parent planet must be set before setting the star otherwise it would cause duplicate planets in the StellarBody's array
-		if(nbt.contains("parentPlanet"))
-			parentPlanet = new ResourceLocation(nbt.getString("parentPlanet"));
-		this.starId = new ResourceLocation(nbt.getString("starId"));
-		this.setStar(DimensionManager.getInstance().getStar(new ResourceLocation(nbt.getString("starId"))));
+		ResourceLocation loadedParent = LegacyDimensionIdMigration.read(nbt, "parentPlanet");
+		if(loadedParent != null)
+			parentPlanet = loadedParent;
+
+		ResourceLocation loadedStar = nbt.contains("starId", NBT.TAG_STRING)
+				? ResourceLocation.tryCreate(nbt.getString("starId"))
+				: nbt.contains("starId", NBT.TAG_ANY_NUMERIC)
+					? LegacyDimensionIdMigration.fromLegacyStarId(nbt.getInt("starId")) : null;
+		if(loadedStar != null) {
+			this.starId = loadedStar;
+			StellarBody loadedStarBody = DimensionManager.getInstance().getStar(loadedStar);
+			if(loadedStarBody != null)
+				this.setStar(loadedStarBody);
+		}
 
 		if(isGasGiant) {
 			ListNBT fluidList = nbt.getList("fluids", NBT.TAG_STRING);
@@ -1705,6 +1801,17 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 			nbt.put("biomes", biomeList);
 		}
 
+		if(!craterBiomeWeights.isEmpty()) {
+			ListNBT craterBiomeList = new ListNBT();
+			for(CraterBiomeWeight craterBiomeWeight : craterBiomeWeights) {
+				CompoundNBT entry = new CompoundNBT();
+				entry.putString("biome", craterBiomeWeight.getBiomeId().toString());
+				entry.putInt("weight", craterBiomeWeight.getWeight());
+				craterBiomeList.add(entry);
+			}
+			nbt.put("craterBiomeWeights", craterBiomeList);
+		}
+
 
 		if(!laserDrillOres.isEmpty()) {
 			list = new ListNBT();
@@ -1826,6 +1933,67 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 
 		writeTechnicalNBT(nbt);
 	}
+	private static void addStructure(List<String> structures, List<String> settings, String path, int spacing, int salt) {
+		int safeSpacing = Math.max(3, spacing);
+		int separation = Math.max(1, safeSpacing / 2);
+		if(separation >= safeSpacing)
+			separation = safeSpacing - 1;
+
+		String id = Constants.modId + ":" + path;
+		structures.add("\"" + id + "\"");
+		settings.add(
+				"	          \"" + id + "\": {\n" +
+						"	            \"spacing\": " + safeSpacing + ",\n" +
+						"	            \"separation\": " + separation + ",\n" +
+						"	            \"salt\": " + salt + "\n" +
+				"	          }");
+	}
+
+	private static void addConfiguredStructureStart(List<String> structures, String id) {
+		structures.add("\"" + id + "\"");
+	}
+
+	private static void addStructureSetting(List<String> settings, String id, int spacing, int separation, int salt) {
+		settings.add(
+				"	          \"" + id + "\": {\n" +
+						"	            \"spacing\": " + spacing + ",\n" +
+						"	            \"separation\": " + separation + ",\n" +
+						"	            \"salt\": " + salt + "\n" +
+				"	          }");
+	}
+
+	private static void addVanillaPlanetStructures(List<String> structures, List<String> settings) {
+		// 1.12 used MapGenMineshaft, MapGenSpaceVillage, MapGenStronghold,
+		// MapGenScatteredFeature and StructureOceanMonument on habitable planets.
+		addConfiguredStructureStart(structures, "minecraft:mineshaft");
+		addConfiguredStructureStart(structures, "minecraft:village_plains");
+		addStructureSetting(settings, "minecraft:mineshaft", 1, 0, 0);
+		addStructureSetting(settings, "minecraft:village", 32, 8, 10387312);
+		addStructureSetting(settings, "minecraft:stronghold", 1, 0, 0);
+		addStructureSetting(settings, "minecraft:desert_pyramid", 32, 8, 14357617);
+		addStructureSetting(settings, "minecraft:igloo", 32, 8, 14357618);
+		addStructureSetting(settings, "minecraft:jungle_pyramid", 32, 8, 14357619);
+		addStructureSetting(settings, "minecraft:swamp_hut", 32, 8, 14357620);
+		addStructureSetting(settings, "minecraft:monument", 32, 5, 10387313);
+	}
+
+	/**
+	 * The old small/normal crater and geode generators used an OR between two
+	 * one-in-N coordinate rolls. A structure grid with roughly sqrt(N / 2)
+	 * spacing preserves that density in the 1.16 structure system.
+	 */
+	private static int scaleOrChance(float oldChance, float multiplier) {
+		return Math.max(3, Math.round((float)Math.sqrt(Math.max(1F, oldChance * Math.max(0.01F, multiplier) / 2F))));
+	}
+
+	/**
+	 * The old huge-crater and volcano generators required both coordinate
+	 * rolls, so their one-in-N-per-axis chance maps directly to grid spacing.
+	 */
+	private static int scaleAndChance(float oldChance, float multiplier) {
+		return Math.max(3, Math.round(oldChance * Math.max(0.01F, multiplier)));
+	}
+
 	public String generateDimJSON()
 	{
 		long seed = 0;
@@ -1836,34 +2004,33 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 
 		
 		if(!isAsteroid()) {
-			if(canGenerateCraters()) {
-				structures.add("\"advancedrocketry:crater\"");
-
-				biomeConditionalStructures.add(
-						"	          \"advancedrocketry:crater\": {\n" + 
-								"	            \"spacing\": " + 40 * getCraterMultiplier() + ",\n" +
-								"	            \"separation\": " + 20 * getCraterMultiplier() + ",\n" +
-								"	            \"salt\": 0\n" + 
-						"	          }");
-
+			float atmosphere = getAtmosphereDensity() / 100F;
+			boolean generateVanillaStructures = ARConfiguration.getCurrentConfig().generateVanillaStructures.get()
+					&& canGenerateStructures() && isHabitable();
+			if(generateVanillaStructures) {
+				addVanillaPlanetStructures(structures, biomeConditionalStructures);
 			}
-			if(canGenerateVolcanoes) {
-				structures.add("\"advancedrocketry:volcano\"");
-				biomeConditionalStructures.add(
-						"	          \"advancedrocketry:volcano\": {\n" + 
-								"	            \"spacing\": " + 40 * getVolcanoMultiplier() + ",\n" +
-								"	            \"separation\": " + 20 * getVolcanoMultiplier() + ",\n" +
-								"	            \"salt\": 0\n" + 
-						"	          }");
+			if(ARConfiguration.getCurrentConfig().generateCraters.get() && canGenerateCraters()) {
+				if(atmosphere <= 0.05F) {
+					addStructure(structures, biomeConditionalStructures, "crater_small",
+							scaleOrChance(16F + 8F * (1F - atmosphere), getCraterMultiplier()), 14357617);
+				}
+
+				addStructure(structures, biomeConditionalStructures, "crater",
+						scaleOrChance(250F + 175F * (1F - atmosphere), getCraterMultiplier()), 14357618);
+
+				if(atmosphere == 0F) {
+					addStructure(structures, biomeConditionalStructures, "crater_huge",
+							scaleAndChance(200F, getCraterMultiplier()), 14357619);
+				}
 			}
-			if(canGenerateGeodes()) {
-				structures.add("\"advancedrocketry:geode\"");
-				biomeConditionalStructures.add(
-						"	          \"advancedrocketry:geode\": {\n" + 
-								"	            \"spacing\": " + 40 * getGeodeMultiplier() + ",\n" +
-								"	            \"separation\": " + 20 * getGeodeMultiplier() + ",\n" +
-								"	            \"salt\": 0\n" + 
-						"	          }");
+			if(ARConfiguration.getCurrentConfig().generateVolcanoes.get() && canGenerateVolcanoes) {
+				addStructure(structures, biomeConditionalStructures, "volcano",
+						scaleAndChance(15F, getVolcanoMultiplier()), 14357620);
+			}
+			if(ARConfiguration.getCurrentConfig().generateGeodes.get() && canGenerateGeodes()) {
+				addStructure(structures, biomeConditionalStructures, "geode",
+						scaleOrChance(800F, getGeodeMultiplier()), 14357621);
 			}
 			
 			for(Biome biome : getBiomes()) {
@@ -1908,7 +2075,7 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 					"      \"bedrock_roof_position\": -10,\n" + 
 					"      \"bedrock_floor_position\": 0,\n" + 
 					"      \"sea_level\": "  + getSeaLevel() + ",\n" +
-					"      \"disable_mob_generation\": " +  (isHabitable() ? "true" : "false") + ",\n" + 
+					"      \"disable_mob_generation\": " +  (!isHabitable() ? "true" : "false") + ",\n" +
 					"      \"default_block\": {\n" + 
 					"        \"Name\": \"" + getStoneBlock().getBlock().getRegistryName().toString() + "\"\n" + 
 					"      },\n" + 
@@ -1946,6 +2113,7 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 					"        }\n" + 
 					"      },\n" + 
 					"      \"structures\": {\n" + 
+					(generateVanillaStructures ? "        \"stronghold\": {\"distance\": 32, \"spread\": 3, \"count\": 128},\n" : "") +
 					"        \"structures\": {\n" + 
 					String.join(",\n", biomeConditionalStructures) +
 					"        }\n" + 
@@ -1997,7 +2165,7 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 				"      \"bedrock_roof_position\": -10,\n" + 
 				"      \"bedrock_floor_position\": -10,\n" + 
 				"      \"sea_level\": "  + getSeaLevel() + ",\n" +
-				"      \"disable_mob_generation\": " +  (isHabitable() ? "true" : "false") + ",\n" + 
+				"      \"disable_mob_generation\": " +  (!isHabitable() ? "true" : "false") + ",\n" +
 				"      \"default_block\": {\n" + 
 				"        \"Name\": \"" + getStoneBlock().getBlock().getRegistryName().toString() + "\"\n" + 
 				"      },\n" + 
@@ -2190,7 +2358,7 @@ public class DimensionProperties implements Cloneable, IDimensionProperties {
 	}
 
 	public float getGeodeMultiplier() {
-		return volcanoFrequencyMultiplier;
+		return geodeFrequencyMultiplier;
 	}
 
 	public void setGeodeMultiplier(float geodeFrequencyMultiplier) {
